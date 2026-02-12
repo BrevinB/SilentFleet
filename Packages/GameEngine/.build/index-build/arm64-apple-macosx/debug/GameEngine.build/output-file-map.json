@@ -1,0 +1,152 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/master.swiftdeps"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/AI/AIPlacementStrategy.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AIPlacementStrategy.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AIPlacementStrategy.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AIPlacementStrategy~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AIPlacementStrategy.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AIPlacementStrategy.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/AI/AITargetingStrategy.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AITargetingStrategy.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AITargetingStrategy.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AITargetingStrategy~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AITargetingStrategy.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/AITargetingStrategy.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/AI/HeatAvoidancePlacement.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/HeatAvoidancePlacement.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/HeatAvoidancePlacement.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/HeatAvoidancePlacement~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/HeatAvoidancePlacement.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/HeatAvoidancePlacement.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/AI/InvertedHeatPlacement.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/InvertedHeatPlacement.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/InvertedHeatPlacement.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/InvertedHeatPlacement~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/InvertedHeatPlacement.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/InvertedHeatPlacement.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/AI/RandomPlacement.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/RandomPlacement.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/RandomPlacement.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/RandomPlacement~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/RandomPlacement.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/RandomPlacement.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Engine/TurnEngine.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnEngine.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnEngine.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnEngine.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnEngine.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Engine/TurnError.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnError.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnError.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnError~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnError.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnError.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/GameEngine.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameEngine.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameEngine.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameEngine.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameEngine.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/Board.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Board.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Board.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Board~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Board.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Board.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/Coordinate.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Coordinate.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Coordinate.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Coordinate~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Coordinate.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Coordinate.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/GameMode.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameMode.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameMode.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameMode~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameMode.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameMode.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/GameState.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameState.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameState.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameState~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameState.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/GameState.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/Orientation.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Orientation.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Orientation.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Orientation~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Orientation.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Orientation.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/Player.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Player.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Player.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Player~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Player.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Player.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/PowerUp.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUp.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUp.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUp~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUp.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUp.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/PowerUpKit.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUpKit.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUpKit.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUpKit~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUpKit.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PowerUpKit.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/Ship.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Ship.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Ship.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Ship~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Ship.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/Ship.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/TurnAction.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnAction.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnAction.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnAction~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnAction.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnAction.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Models/TurnResult.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnResult.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnResult.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnResult~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnResult.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/TurnResult.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Validation/PlacementError.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementError.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementError.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementError~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementError.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementError.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Sources/GameEngine/Validation/PlacementValidator.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementValidator.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementValidator.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementValidator~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementValidator.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/PlacementValidator.dia"
+  }
+}

@@ -1,0 +1,3 @@
+module GameEngine {
+    header "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngine.build/include/GameEngine-Swift.h"
+}

@@ -1,0 +1,61 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/master.swiftdeps"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/AIPlacementTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AIPlacementTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AIPlacementTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AIPlacementTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AIPlacementTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AIPlacementTests.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/AITargetingTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AITargetingTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AITargetingTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AITargetingTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AITargetingTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/AITargetingTests.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/CoordinateTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/CoordinateTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/CoordinateTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/CoordinateTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/CoordinateTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/CoordinateTests.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/GameStateTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/GameStateTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/GameStateTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/GameStateTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/GameStateTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/GameStateTests.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/PlacementValidatorTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PlacementValidatorTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PlacementValidatorTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PlacementValidatorTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PlacementValidatorTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PlacementValidatorTests.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/PowerUpTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PowerUpTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PowerUpTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PowerUpTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PowerUpTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/PowerUpTests.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/ShipTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/ShipTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/ShipTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/ShipTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/ShipTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/ShipTests.dia"
+  },
+  "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/Tests/GameEngineTests/TurnEngineTests.swift": {
+    "dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/TurnEngineTests.d",
+    "object": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/TurnEngineTests.swift.o",
+    "swiftmodule": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/TurnEngineTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/TurnEngineTests.swiftdeps",
+    "diagnostics": "/Users/brevin/Developer/SilentFleet/Packages/GameEngine/.build/index-build/arm64-apple-macosx/debug/GameEngineTests.build/TurnEngineTests.dia"
+  }
+}
