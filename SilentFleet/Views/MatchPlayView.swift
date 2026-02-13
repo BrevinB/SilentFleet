@@ -5,6 +5,7 @@ import Combine
 struct MatchPlayView: View {
     @ObservedObject var viewModel: GameViewModel
     @State private var showingPlayerBoard = false
+    @State private var showingGameplayTooltips = false
 
     // Auto-switch to player board when AI is about to attack or has attacked
     private var effectiveShowingPlayerBoard: Bool {
@@ -154,6 +155,16 @@ struct MatchPlayView: View {
                 AIThinkingOverlay()
             }
         }
+        .overlay {
+            if showingGameplayTooltips {
+                GameplayTooltipOverlay(isShowing: $showingGameplayTooltips)
+            }
+        }
+        .onAppear {
+            if !SettingsManager.shared.hasCompletedGameplayTooltips {
+                showingGameplayTooltips = true
+            }
+        }
     }
 
     private var powerUpHighlight: Set<Coordinate> {
@@ -245,23 +256,24 @@ struct FleetStatusView: View {
 struct ShipIndicator: View {
     let size: Int
     let isSunk: Bool
+    var skin: ShipSkin = PlayerInventory.shared.equippedSkin
 
     var body: some View {
         HStack(spacing: 1) {
             ForEach(0..<size, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(isSunk ? .red.opacity(0.5) : .cyan)
+                    .fill(isSunk ? skin.indicatorSunk : skin.indicatorHealthy)
                     .frame(width: 6, height: 12)
             }
         }
         .padding(2)
         .background(
             RoundedRectangle(cornerRadius: 3)
-                .fill(isSunk ? .red.opacity(0.15) : .white.opacity(0.1))
+                .fill(isSunk ? skin.indicatorSunkBackground : skin.indicatorBackground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 3)
-                .stroke(isSunk ? .red.opacity(0.3) : .white.opacity(0.2), lineWidth: 1)
+                .stroke(isSunk ? skin.indicatorSunkBorder : skin.indicatorBorder, lineWidth: 1)
         )
         .opacity(isSunk ? 0.6 : 1.0)
     }

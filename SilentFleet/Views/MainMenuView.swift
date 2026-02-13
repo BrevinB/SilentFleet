@@ -3,16 +3,69 @@ import GameEngine
 
 struct MainMenuView: View {
     @StateObject private var viewModel = GameViewModel()
+    @ObservedObject private var inventory = PlayerInventory.shared
     @State private var showingGameSetup = false
     @State private var navigateToGame = false
+    @State private var showingSettings = false
+    @State private var showingHowToPlay = false
+    @State private var showingShop = false
     @State private var titleOffset: CGFloat = -50
     @State private var buttonsOpacity: Double = 0
+    @State private var savedGames: [GameState] = []
+    @State private var hasSavedGame = false
 
     var body: some View {
         NavigationStack {
             ZStack {
                 // Animated Background
                 AnimatedOceanBackground()
+
+                // Top bar: Shop (left) + Settings (right)
+                VStack {
+                    HStack {
+                        // Shop button with coin balance
+                        Button {
+                            HapticManager.shared.buttonTap()
+                            SoundManager.shared.buttonTap()
+                            showingShop = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "bag.fill")
+                                    .font(.subheadline)
+                                Image(systemName: "dollarsign.circle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.yellow)
+                                Text("\(inventory.coinBalance)")
+                                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                                    .foregroundStyle(.yellow)
+                            }
+                            .foregroundStyle(.white.opacity(0.7))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Capsule().fill(.white.opacity(0.1)))
+                        }
+                        .padding(.leading, 20)
+                        .padding(.top, 8)
+
+                        Spacer()
+
+                        Button {
+                            HapticManager.shared.buttonTap()
+                            SoundManager.shared.buttonTap()
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.title2)
+                                .foregroundStyle(.white.opacity(0.7))
+                                .padding(12)
+                                .background(Circle().fill(.white.opacity(0.1)))
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.top, 8)
+                    }
+                    Spacer()
+                }
+                .zIndex(1)
 
                 VStack(spacing: 40) {
                     Spacer()
@@ -62,9 +115,13 @@ struct MainMenuView: View {
                             icon: "arrow.clockwise",
                             color: .green
                         ) {
-                            // Future: load saved games
+                            if let game = savedGames.first {
+                                viewModel.resumeGame(game)
+                                navigateToGame = true
+                            }
                         }
-                        .opacity(0.5)
+                        .opacity(hasSavedGame ? 1 : 0.5)
+                        .disabled(!hasSavedGame)
 
                         MenuButton(
                             title: "How to Play",
@@ -72,9 +129,8 @@ struct MainMenuView: View {
                             icon: "questionmark.circle",
                             color: .orange
                         ) {
-                            // Future: show rules
+                            showingHowToPlay = true
                         }
-                        .opacity(0.5)
                     }
                     .padding(.horizontal, 24)
                     .opacity(buttonsOpacity)
@@ -102,23 +158,46 @@ struct MainMenuView: View {
             .navigationDestination(isPresented: $navigateToGame) {
                 GameContainerView(viewModel: viewModel)
             }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+                    .environmentObject(SettingsManager.shared)
+            }
+            .sheet(isPresented: $showingHowToPlay) {
+                HowToPlayView()
+            }
+            .sheet(isPresented: $showingShop) {
+                ShopView()
+            }
+            .task {
+                await loadSavedGames()
+            }
+            .onAppear {
+                Task {
+                    await loadSavedGames()
+                }
+            }
         }
+    }
+
+    private func loadSavedGames() async {
+        savedGames = await viewModel.loadSavedGames()
+        hasSavedGame = !savedGames.isEmpty
     }
 }
 
 // MARK: - Animated Background
 
 struct AnimatedOceanBackground: View {
+    @ObservedObject private var inventory = PlayerInventory.shared
     @State private var waveOffset: CGFloat = 0
+
+    private var theme: BoardTheme { inventory.equippedTheme }
 
     var body: some View {
         ZStack {
             // Base gradient
             LinearGradient(
-                colors: [
-                    Color(red: 0.1, green: 0.2, blue: 0.4),
-                    Color(red: 0.05, green: 0.1, blue: 0.2)
-                ],
+                colors: [theme.backgroundGradientTop, theme.backgroundGradientBottom],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -126,12 +205,12 @@ struct AnimatedOceanBackground: View {
 
             // Animated wave layers
             WaveShape(offset: waveOffset, amplitude: 20)
-                .fill(Color.white.opacity(0.05))
+                .fill(theme.waveColor.opacity(theme.waveOpacity1))
                 .frame(height: 200)
                 .offset(y: 250)
 
             WaveShape(offset: waveOffset + 100, amplitude: 15)
-                .fill(Color.white.opacity(0.03))
+                .fill(theme.waveColor.opacity(theme.waveOpacity2))
                 .frame(height: 150)
                 .offset(y: 300)
         }
@@ -187,6 +266,7 @@ struct MenuButton: View {
     var body: some View {
         Button(action: {
             HapticManager.shared.buttonTap()
+            SoundManager.shared.buttonTap()
             action()
         }) {
             HStack(spacing: 16) {

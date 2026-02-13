@@ -42,11 +42,18 @@ struct MatchSummaryView: View {
                     StatsView(state: state)
                 }
 
+                // Coin reward
+                if let reward = viewModel.coinReward {
+                    CoinRewardView(reward: reward)
+                }
+
                 Spacer()
 
                 // Actions
                 VStack(spacing: 12) {
                     Button {
+                        HapticManager.shared.buttonTap()
+                        SoundManager.shared.buttonTap()
                         viewModel.startNewGame(
                             mode: viewModel.gameMode,
                             difficulty: viewModel.aiDifficulty,
@@ -65,6 +72,8 @@ struct MatchSummaryView: View {
                     }
 
                     Button {
+                        HapticManager.shared.buttonTap()
+                        SoundManager.shared.buttonTap()
                         onDismiss()
                     } label: {
                         Text("Main Menu")
@@ -176,6 +185,66 @@ struct StatItem: View {
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.7))
+        }
+    }
+}
+
+struct CoinRewardView: View {
+    let reward: CoinReward
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Image(systemName: "dollarsign.circle.fill")
+                    .foregroundStyle(.yellow)
+                Text("Coins Earned")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+            }
+
+            VStack(spacing: 6) {
+                if reward.winBonus > 0 {
+                    rewardRow(label: "Victory Bonus", amount: reward.winBonus)
+                }
+                if reward.sinkBonus > 0 {
+                    rewardRow(label: "Ships Sunk", amount: reward.sinkBonus)
+                }
+                rewardRow(label: "Completion", amount: reward.completionBonus)
+
+                Divider().overlay(.white.opacity(0.2))
+
+                HStack {
+                    Text("Total")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Text("+\(reward.total)")
+                        .font(.title3.weight(.bold).monospacedDigit())
+                        .foregroundStyle(.yellow)
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.yellow.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(.yellow.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal)
+    }
+
+    private func rewardRow(label: String, amount: Int) -> some View {
+        HStack {
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.white.opacity(0.7))
+            Spacer()
+            Text("+\(amount)")
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .foregroundStyle(.yellow)
         }
     }
 }

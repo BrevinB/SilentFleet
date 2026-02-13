@@ -15,11 +15,15 @@ struct BoardView: View {
     var recentShotCoordinate: Coordinate? = nil
     var onCellTap: ((Coordinate) -> Void)?
 
+    @ObservedObject private var inventory = PlayerInventory.shared
     @State private var hoverCoordinate: Coordinate?
 
     private let gridSize = Board.size
     private let cellSize: CGFloat = 32
     private let spacing: CGFloat = 2
+
+    private var theme: BoardTheme { inventory.equippedTheme }
+    private var skin: ShipSkin { inventory.equippedSkin }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,7 +35,7 @@ struct BoardView: View {
                 ForEach(0..<gridSize, id: \.self) { col in
                     Text("\(col)")
                         .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(theme.labelColor)
                         .frame(width: cellSize, height: 16)
                 }
             }
@@ -42,7 +46,7 @@ struct BoardView: View {
                     // Row label
                     Text("\(row)")
                         .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(theme.labelColor)
                         .frame(width: 20)
 
                     // Cells
@@ -51,6 +55,8 @@ struct BoardView: View {
                         CellView(
                             coordinate: coord,
                             state: cellState(for: coord),
+                            theme: theme,
+                            skin: skin,
                             isHighlighted: highlightedCoordinates.contains(coord),
                             isPreview: isPreviewCell(coord),
                             isValidPreview: isValidPreviewCell(coord),
@@ -70,10 +76,10 @@ struct BoardView: View {
         .padding(8)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(.white.opacity(0.1))
+                .fill(theme.boardBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(.white.opacity(0.2), lineWidth: 1)
+                        .stroke(theme.boardBorder, lineWidth: 1)
                 )
         )
     }
@@ -126,6 +132,8 @@ struct BoardView: View {
 struct CellView: View {
     let coordinate: Coordinate
     let state: CellState
+    let theme: BoardTheme
+    let skin: ShipSkin
     var isHighlighted: Bool = false
     var isPreview: Bool = false
     var isValidPreview: Bool = false
@@ -175,14 +183,14 @@ struct CellView: View {
 
             // Sonar pulse overlay - pulsing ship indicator
             if isSonarPulse {
-                Image(systemName: "ship.fill")
+                Image(systemName: skin.shipIcon)
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
-                    .shadow(color: .green, radius: 4)
+                    .shadow(color: skin.shipIconShadowColor, radius: 4)
             }
 
             // State indicator (hidden during sonar pulse)
-            if let symbol = state.symbol, !isSonarPulse {
+            if let symbol = symbolForState, !isSonarPulse {
                 Image(systemName: symbol)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(symbolColor)
@@ -304,8 +312,8 @@ struct CellView: View {
 
     private var rippleColor: Color {
         switch state {
-        case .hit, .sunk: return .orange
-        case .miss: return .white
+        case .hit, .sunk: return theme.rippleHit
+        case .miss: return theme.rippleMiss
         default: return .clear
         }
     }
@@ -317,23 +325,32 @@ struct CellView: View {
 
         switch state {
         case .empty:
-            return .white.opacity(0.1)  // Navy theme - subtle water cell
+            return theme.cellEmpty
         case .ship:
-            return .cyan.opacity(0.3)  // Navy theme - visible ship
+            return skin.shipPlacedBackground
         case .hit:
-            return .orange.opacity(0.7)  // Bright hit indicator
+            return theme.cellHit
         case .miss:
-            return .white.opacity(0.05)  // Very subtle miss
+            return theme.cellMiss
         case .sunk:
-            return .red.opacity(0.5)  // Sunk ship
+            return theme.cellSunk
+        }
+    }
+
+    private var symbolForState: String? {
+        switch state {
+        case .hit: return theme.hitSymbol
+        case .miss: return theme.missSymbol
+        case .sunk: return theme.sunkSymbol
+        default: return nil
         }
     }
 
     private var symbolColor: Color {
         switch state {
-        case .hit: return .orange
-        case .miss: return .white.opacity(0.5)
-        case .sunk: return .red
+        case .hit: return theme.hitSymbolColor
+        case .miss: return theme.missSymbolColor
+        case .sunk: return theme.sunkSymbolColor
         default: return .clear
         }
     }

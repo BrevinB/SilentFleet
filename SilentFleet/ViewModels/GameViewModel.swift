@@ -24,6 +24,7 @@ final class GameViewModel: ObservableObject {
     @Published var isAIThinking: Bool = false
     @Published var showingAIResult: Bool = false
     @Published var showingPlayerBoardForAI: Bool = false  // Switch to player board before AI fires
+    @Published var coinReward: CoinReward?
 
     // MARK: - Configuration
 
@@ -116,6 +117,7 @@ final class GameViewModel: ObservableObject {
         errorMessage = nil
         isAIThinking = false
         showingAIResult = false
+        coinReward = nil
     }
 
     // MARK: - Ship Placement
@@ -162,6 +164,7 @@ final class GameViewModel: ObservableObject {
         selectedShip = nil
 
         HapticManager.shared.shipPlaced()
+        SoundManager.shared.shipPlaced()
     }
 
     func canPlaceShip(at coordinate: Coordinate) -> Bool {
@@ -203,11 +206,13 @@ final class GameViewModel: ObservableObject {
             }
 
             HapticManager.shared.shipPlaced()
+            SoundManager.shared.shipPlaced()
             selectedShip = nil
             return true
 
         case .failure(let error):
             HapticManager.shared.invalidPlacement()
+            SoundManager.shared.invalidPlacement()
             errorMessage = error.localizedDescription
             return false
         }
@@ -231,6 +236,8 @@ final class GameViewModel: ObservableObject {
 
         switch result {
         case .success:
+            SoundManager.shared.confirm()
+
             // Set player's board
             state.player1.board = Board(ships: placedShips)
 
@@ -343,6 +350,7 @@ final class GameViewModel: ObservableObject {
             sonarPulseCoordinates = Set(result.detectedCoordinates)  // Highlight ships found
             showingSonarPulse = true
             HapticManager.shared.sonarPing()
+            SoundManager.shared.sonarPing()
             Task {
                 try? await Task.sleep(for: .seconds(2.5))
                 await MainActor.run {
@@ -357,6 +365,7 @@ final class GameViewModel: ObservableObject {
             lastPowerUpResult = result
             showingPowerUpResult = true
             HapticManager.shared.sonarPing()
+            SoundManager.shared.rowScan()
             // Clear row highlight after delay
             Task {
                 try? await Task.sleep(for: .seconds(3))
@@ -374,6 +383,8 @@ final class GameViewModel: ObservableObject {
 
     func fireShot(at coordinate: Coordinate) {
         guard var state = gameState, isPlayerTurn else { return }
+
+        SoundManager.shared.shotFired()
 
         // Fire shot only (no power-up bundled)
         let action = TurnAction(powerUp: nil, shot: coordinate)
@@ -395,6 +406,7 @@ final class GameViewModel: ObservableObject {
             // Check for game end
             if state.isGameOver {
                 triggerGameEndHaptic()
+                coinReward = CoinManager.awardCoins(for: state)
             }
 
             // If game not over and it's AI's turn, execute AI turn after delay
@@ -415,6 +427,7 @@ final class GameViewModel: ObservableObject {
 
         // Switch to player's board so they can watch the AI's shot
         showingPlayerBoardForAI = true
+        SoundManager.shared.turnChange()
 
         // Brief pause for board switch animation
         try? await Task.sleep(nanoseconds: 400_000_000) // 0.4s for transition
@@ -465,16 +478,21 @@ final class GameViewModel: ObservableObject {
             gameState = state
             saveGame()
 
-            // Haptic for AI hit (so player feels when they get hit)
+            // Haptic/sound for AI hit (so player feels when they get hit)
             if case .hit = turnResult.shotResult {
                 HapticManager.shared.hit()
+                SoundManager.shared.hit()
             } else if case .sunk = turnResult.shotResult {
                 HapticManager.shared.sunk()
+                SoundManager.shared.sunk()
+            } else {
+                SoundManager.shared.miss()
             }
 
             // Check for game end
             if state.isGameOver {
                 triggerGameEndHaptic()
+                coinReward = CoinManager.awardCoins(for: state)
             }
 
             // Auto-dismiss AI result after giving player time to see it
@@ -534,10 +552,13 @@ final class GameViewModel: ObservableObject {
         switch result {
         case .miss:
             HapticManager.shared.miss()
+            SoundManager.shared.miss()
         case .hit:
             HapticManager.shared.hit()
+            SoundManager.shared.hit()
         case .sunk:
             HapticManager.shared.sunk()
+            SoundManager.shared.sunk()
         }
     }
 
@@ -545,8 +566,10 @@ final class GameViewModel: ObservableObject {
         guard let state = gameState, let winnerId = state.winner else { return }
         if winnerId == state.player1.id {
             HapticManager.shared.gameWon()
+            SoundManager.shared.gameWon()
         } else {
             HapticManager.shared.gameLost()
+            SoundManager.shared.gameLost()
         }
     }
 

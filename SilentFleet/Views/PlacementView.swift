@@ -11,6 +11,7 @@ struct BoardFrameKey: PreferenceKey {
 
 struct PlacementView: View {
     @ObservedObject var viewModel: GameViewModel
+    @ObservedObject private var inventory = PlayerInventory.shared
     @State private var hoverCoordinate: Coordinate?
     @State private var isDragging: Bool = false
     @State private var isDraggingFromSelection: Bool = false
@@ -20,6 +21,7 @@ struct PlacementView: View {
     @State private var boardFrame: CGRect = .zero
     @State private var draggedShipSize: Int?
     @State private var floatingShipValid: Bool = false
+    @State private var showingPlacementTooltips: Bool = false
 
     private let boardCellSize: CGFloat = 32
     private let boardSpacing: CGFloat = 2
@@ -150,6 +152,8 @@ struct PlacementView: View {
                     draggedPlacedShip: draggedPlacedShip,
                     selectedShip: viewModel.selectedShip,
                     orientation: viewModel.placementOrientation,
+                    skin: inventory.equippedSkin,
+                    theme: inventory.equippedTheme,
                     hoverCoordinate: $hoverCoordinate,
                     isDragging: $isDragging,
                     boardFrame: $boardFrame,
@@ -161,6 +165,7 @@ struct PlacementView: View {
                         draggedPlacedShip = ship
                         viewModel.placedShips.removeAll { $0.id == ship.id }
                         HapticManager.shared.buttonTap()
+                        SoundManager.shared.buttonTap()
                     },
                     onDragEnd: { coord in
                         // Handle drag end for both new ships and repositioned ships
@@ -175,10 +180,12 @@ struct PlacementView: View {
                                 // Place in new position
                                 viewModel.placedShips.append(newShip)
                                 HapticManager.shared.shipPlaced()
+                                SoundManager.shared.shipPlaced()
                             } else {
                                 // Invalid - return to original position
                                 viewModel.placedShips.append(movedShip)
                                 HapticManager.shared.invalidPlacement()
+                                SoundManager.shared.invalidPlacement()
                             }
 
                             isDraggingPlacedShip = false
@@ -192,10 +199,12 @@ struct PlacementView: View {
                             // Check if valid
                             guard ship.isWithinBounds else {
                                 HapticManager.shared.invalidPlacement()
+                                SoundManager.shared.invalidPlacement()
                                 return
                             }
                             if case .failure = PlacementValidator.canPlace(ship: ship, on: viewModel.placedShips) {
                                 HapticManager.shared.invalidPlacement()
+                                SoundManager.shared.invalidPlacement()
                                 return
                             }
 
@@ -205,6 +214,7 @@ struct PlacementView: View {
                                 viewModel.remainingFleetSizes.remove(at: index)
                             }
                             HapticManager.shared.shipPlaced()
+                            SoundManager.shared.shipPlaced()
                             viewModel.selectedShip = nil
                             hoverCoordinate = nil
                         }
@@ -272,8 +282,10 @@ struct PlacementView: View {
                                     viewModel.remainingFleetSizes.remove(at: index)
                                 }
                                 HapticManager.shared.shipPlaced()
+                                SoundManager.shared.shipPlaced()
                             } else {
                                 HapticManager.shared.invalidPlacement()
+                                SoundManager.shared.invalidPlacement()
                             }
                             viewModel.selectedShip = nil
                             hoverCoordinate = nil
@@ -290,6 +302,7 @@ struct PlacementView: View {
                     // Orientation Toggle
                     Button {
                         HapticManager.shared.buttonTap()
+                        SoundManager.shared.buttonTap()
                         viewModel.toggleOrientation()
                     } label: {
                         HStack {
@@ -310,6 +323,7 @@ struct PlacementView: View {
                     // Auto-populate Button
                     Button {
                         HapticManager.shared.buttonTap()
+                        SoundManager.shared.buttonTap()
                         viewModel.autoPopulateShips()
                         // Clear any dragging state
                         isDragging = false
@@ -370,6 +384,16 @@ struct PlacementView: View {
             }
         }
         .coordinateSpace(name: "placement")
+        .overlay {
+            if showingPlacementTooltips {
+                PlacementTooltipOverlay(isShowing: $showingPlacementTooltips)
+            }
+        }
+        .onAppear {
+            if !SettingsManager.shared.hasCompletedPlacementTooltips {
+                showingPlacementTooltips = true
+            }
+        }
     }
 }
 
@@ -472,6 +496,7 @@ struct DraggableShipButton: View {
     var onDragEnded: (Int, CGPoint) -> Void
 
     @State private var isDragging = false
+    private var skin: ShipSkin { PlayerInventory.shared.equippedSkin }
 
     var body: some View {
         VStack(spacing: 4) {
@@ -479,7 +504,7 @@ struct DraggableShipButton: View {
             HStack(spacing: 2) {
                 ForEach(0..<size, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(isSelected ? .cyan : .white.opacity(0.6))
+                        .fill(isSelected ? skin.selectionHighlight : .white.opacity(0.6))
                         .frame(width: 12, height: 12)
                 }
             }
@@ -489,7 +514,7 @@ struct DraggableShipButton: View {
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(.white)
                 .frame(width: 18, height: 18)
-                .background(Circle().fill(count > 0 ? .cyan : .white.opacity(0.3)))
+                .background(Circle().fill(count > 0 ? skin.selectionBadgeColor : .white.opacity(0.3)))
         }
         .padding(8)
         .background(
@@ -497,13 +522,14 @@ struct DraggableShipButton: View {
                 .fill(.white.opacity(isSelected ? 0.2 : 0.1))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(isSelected ? .cyan : .white.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+                        .stroke(isSelected ? skin.selectionHighlight : .white.opacity(0.2), lineWidth: isSelected ? 2 : 1)
                 )
         )
         .opacity(count == 0 ? 0.5 : (isDragging ? 0.3 : 1))
         .onTapGesture {
             guard count > 0 else { return }
             HapticManager.shared.buttonTap()
+            SoundManager.shared.buttonTap()
             onTap(size)
         }
         .gesture(
@@ -513,6 +539,7 @@ struct DraggableShipButton: View {
                     if !isDragging {
                         isDragging = true
                         HapticManager.shared.buttonTap()
+                        SoundManager.shared.buttonTap()
                         onDragStarted(size, value.location)
                     } else {
                         onDragChanged(size, value.location)
@@ -535,6 +562,8 @@ struct PlacementBoardView: View {
     let draggedPlacedShip: Ship?  // Ship currently being repositioned
     let selectedShip: Ship?
     let orientation: Orientation
+    let skin: ShipSkin
+    let theme: BoardTheme
     @Binding var hoverCoordinate: Coordinate?
     @Binding var isDragging: Bool
     @Binding var boardFrame: CGRect
@@ -584,7 +613,7 @@ struct PlacementBoardView: View {
                 ForEach(0..<gridSize, id: \.self) { col in
                     Text("\(col)")
                         .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(theme.labelColor)
                         .frame(width: cellSize, height: 16)
                 }
             }
@@ -595,7 +624,7 @@ struct PlacementBoardView: View {
                     // Row label
                     Text("\(row)")
                         .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(theme.labelColor)
                         .frame(width: labelWidth)
 
                     // Cells
@@ -605,7 +634,9 @@ struct PlacementBoardView: View {
                             coordinate: coord,
                             hasShip: hasShip(at: coord),
                             isPreview: isPreviewCell(coord),
-                            isValidPlacement: isPreviewValid
+                            isValidPlacement: isPreviewValid,
+                            skin: skin,
+                            theme: theme
                         )
                         .frame(width: cellSize, height: cellSize)
                     }
@@ -616,10 +647,10 @@ struct PlacementBoardView: View {
         .background(
             GeometryReader { geo in
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(.white.opacity(0.1))
+                    .fill(theme.boardBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(.white.opacity(0.2), lineWidth: 1)
+                            .stroke(theme.boardBorder, lineWidth: 1)
                     )
                     .onAppear {
                         boardFrame = geo.frame(in: .named("placement"))
@@ -706,6 +737,8 @@ struct PlacementCellView: View {
     let hasShip: Bool
     let isPreview: Bool
     let isValidPlacement: Bool
+    var skin: ShipSkin = PlayerInventory.shared.equippedSkin
+    var theme: BoardTheme = PlayerInventory.shared.equippedTheme
 
     var body: some View {
         ZStack {
@@ -713,10 +746,10 @@ struct PlacementCellView: View {
             RoundedRectangle(cornerRadius: 4)
                 .fill(backgroundColor)
 
-            // Ship indicator for already placed ships (cyan/green to show they're moveable)
+            // Ship indicator for already placed ships
             if hasShip && !isPreview {
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(.cyan.opacity(0.8))
+                    .fill(skin.shipFill)
                     .padding(4)
             }
 
@@ -730,7 +763,7 @@ struct PlacementCellView: View {
             // Placed ship border (subtle to indicate it's interactive)
             if hasShip && !isPreview {
                 RoundedRectangle(cornerRadius: 4)
-                    .stroke(.cyan.opacity(0.6), lineWidth: 1)
+                    .stroke(skin.shipBorder, lineWidth: 1)
             }
 
             // Preview border
@@ -747,14 +780,14 @@ struct PlacementCellView: View {
 
     private var backgroundColor: Color {
         if hasShip && !isPreview {
-            return .cyan.opacity(0.2)  // Cyan background for placed ships
+            return skin.shipPlacedBackground
         }
 
         if isPreview {
             return isValidPlacement ? .green.opacity(0.3) : .red.opacity(0.3)
         }
 
-        return .white.opacity(0.1)  // Dark ocean cell
+        return theme.cellEmpty
     }
 }
 

@@ -100,6 +100,7 @@ struct GameSetupView: View {
                         selectedMode = .casual
                     }
                     HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
                 }
 
                 ModeCard(
@@ -120,6 +121,7 @@ struct GameSetupView: View {
                         selectedMode = .ranked
                     }
                     HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
                 }
             }
         }
@@ -146,6 +148,7 @@ struct GameSetupView: View {
                         selectedDifficulty = .easy
                     }
                     HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
                 }
 
                 DifficultyCard(
@@ -161,6 +164,7 @@ struct GameSetupView: View {
                         selectedDifficulty = .medium
                     }
                     HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
                 }
 
                 DifficultyCard(
@@ -176,6 +180,7 @@ struct GameSetupView: View {
                         selectedDifficulty = .hard
                     }
                     HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
                 }
             }
         }
@@ -205,6 +210,7 @@ struct GameSetupView: View {
                         selectedSplit = .topBottom
                     }
                     HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
                 }
 
                 SplitCard(
@@ -217,6 +223,7 @@ struct GameSetupView: View {
                         selectedSplit = .leftRight
                     }
                     HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
                 }
             }
 
