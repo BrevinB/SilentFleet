@@ -15,6 +15,7 @@ public struct GameState: Codable, Equatable, Sendable, Identifiable {
     public let id: UUID
     public let mode: GameMode
     public let aiDifficulty: AIDifficulty?
+    public let gridSize: GridSize
     public let createdAt: Date
 
     // MARK: - Players
@@ -41,12 +42,25 @@ public struct GameState: Codable, Equatable, Sendable, Identifiable {
     public var turnHistory: [TurnResult]
     public var winner: UUID?
 
+    // MARK: - Computed Board Config
+
+    /// The board dimensions for this game
+    public var boardDimension: Int {
+        gridSize.boardSize
+    }
+
+    /// The fleet sizes for this game
+    public var fleetSizes: [Int] {
+        gridSize.fleetSizes
+    }
+
     // MARK: - Initialization
 
     public init(
         id: UUID = UUID(),
         mode: GameMode,
         aiDifficulty: AIDifficulty?,
+        gridSize: GridSize = .large,
         player1: Player,
         player2: Player,
         rankedSplitOrientation: BoardSplit? = nil
@@ -54,6 +68,7 @@ public struct GameState: Codable, Equatable, Sendable, Identifiable {
         self.id = id
         self.mode = mode
         self.aiDifficulty = aiDifficulty
+        self.gridSize = gridSize
         self.createdAt = Date()
         self.player1 = player1
         self.player2 = player2
@@ -70,13 +85,16 @@ public struct GameState: Codable, Equatable, Sendable, Identifiable {
     public static func soloGame(
         mode: GameMode,
         aiDifficulty: AIDifficulty,
+        gridSize: GridSize = .large,
         rankedSplitOrientation: BoardSplit? = nil
     ) -> GameState {
+        let boardSize = gridSize.boardSize
         GameState(
             mode: mode,
             aiDifficulty: aiDifficulty,
-            player1: .human(mode: mode),
-            player2: .ai(mode: mode),
+            gridSize: gridSize,
+            player1: .human(mode: mode, boardSize: boardSize),
+            player2: .ai(mode: mode, boardSize: boardSize),
             rankedSplitOrientation: rankedSplitOrientation
         )
     }
@@ -166,6 +184,34 @@ public struct GameState: Codable, Equatable, Sendable, Identifiable {
     public mutating func setWinner(_ playerID: UUID) {
         winner = playerID
         phase = .finished
+    }
+}
+
+// MARK: - Custom Decodable for backward compatibility
+
+extension GameState {
+    private enum CodingKeys: String, CodingKey {
+        case id, mode, aiDifficulty, gridSize, createdAt
+        case player1, player2, phase, currentPlayerIndex, turnNumber
+        case firstPlayerIndex, rankedSplitOrientation, turnHistory, winner
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        mode = try container.decode(GameMode.self, forKey: .mode)
+        aiDifficulty = try container.decodeIfPresent(AIDifficulty.self, forKey: .aiDifficulty)
+        gridSize = try container.decodeIfPresent(GridSize.self, forKey: .gridSize) ?? .large
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        player1 = try container.decode(Player.self, forKey: .player1)
+        player2 = try container.decode(Player.self, forKey: .player2)
+        phase = try container.decode(MatchPhase.self, forKey: .phase)
+        currentPlayerIndex = try container.decode(Int.self, forKey: .currentPlayerIndex)
+        turnNumber = try container.decode(Int.self, forKey: .turnNumber)
+        firstPlayerIndex = try container.decodeIfPresent(Int.self, forKey: .firstPlayerIndex)
+        rankedSplitOrientation = try container.decodeIfPresent(BoardSplit.self, forKey: .rankedSplitOrientation)
+        turnHistory = try container.decode([TurnResult].self, forKey: .turnHistory)
+        winner = try container.decodeIfPresent(UUID.self, forKey: .winner)
     }
 }
 

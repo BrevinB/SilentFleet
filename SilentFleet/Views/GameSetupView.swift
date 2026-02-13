@@ -8,6 +8,7 @@ struct GameSetupView: View {
     @State private var selectedMode: GameMode = .casual
     @State private var selectedDifficulty: AIDifficulty = .medium
     @State private var selectedSplit: BoardSplit = .topBottom
+    @State private var selectedGridSize: GridSize = .large
     @State private var currentStep: SetupStep = .mode
     @State private var contentOpacity: Double = 1
 
@@ -15,6 +16,7 @@ struct GameSetupView: View {
 
     enum SetupStep: CaseIterable {
         case mode
+        case gridSize
         case difficulty
         case ranked
         case confirm
@@ -36,6 +38,8 @@ struct GameSetupView: View {
                         switch currentStep {
                         case .mode:
                             modeSelectionView
+                        case .gridSize:
+                            gridSizeSelectionView
                         case .difficulty:
                             difficultySelectionView
                         case .ranked:
@@ -119,6 +123,68 @@ struct GameSetupView: View {
                 ) {
                     withAnimation(.spring(response: 0.3)) {
                         selectedMode = .ranked
+                    }
+                    HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
+                }
+            }
+        }
+    }
+
+    private var gridSizeSelectionView: some View {
+        VStack(spacing: 20) {
+            StepHeader(
+                title: "Choose Grid Size",
+                subtitle: "Smaller grids make for quicker games"
+            )
+
+            VStack(spacing: 12) {
+                GridSizeCard(
+                    gridSize: .small,
+                    isSelected: selectedGridSize == .small,
+                    title: "Small",
+                    description: "6×6 grid with 5 ships. Quick battles.",
+                    icon: "square.grid.2x2",
+                    color: .green,
+                    shipCount: GridSize.small.shipCount,
+                    tileInfo: "\(GridSize.small.gridDescription) • \(GridSize.small.totalFleetTiles) tiles"
+                ) {
+                    withAnimation(.spring(response: 0.3)) {
+                        selectedGridSize = .small
+                    }
+                    HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
+                }
+
+                GridSizeCard(
+                    gridSize: .medium,
+                    isSelected: selectedGridSize == .medium,
+                    title: "Medium",
+                    description: "8×8 grid with 6 ships. Balanced gameplay.",
+                    icon: "square.grid.3x3",
+                    color: .orange,
+                    shipCount: GridSize.medium.shipCount,
+                    tileInfo: "\(GridSize.medium.gridDescription) • \(GridSize.medium.totalFleetTiles) tiles"
+                ) {
+                    withAnimation(.spring(response: 0.3)) {
+                        selectedGridSize = .medium
+                    }
+                    HapticManager.shared.buttonTap()
+                    SoundManager.shared.buttonTap()
+                }
+
+                GridSizeCard(
+                    gridSize: .large,
+                    isSelected: selectedGridSize == .large,
+                    title: "Large",
+                    description: "10×10 grid with 9 ships. Classic experience.",
+                    icon: "square.grid.4x3fill",
+                    color: .blue,
+                    shipCount: GridSize.large.shipCount,
+                    tileInfo: "\(GridSize.large.gridDescription) • \(GridSize.large.totalFleetTiles) tiles"
+                ) {
+                    withAnimation(.spring(response: 0.3)) {
+                        selectedGridSize = .large
                     }
                     HapticManager.shared.buttonTap()
                     SoundManager.shared.buttonTap()
@@ -249,6 +315,13 @@ struct GameSetupView: View {
                 )
 
                 SettingSummaryRow(
+                    icon: gridSizeIcon,
+                    label: "Grid",
+                    value: "\(selectedGridSize.displayName) (\(selectedGridSize.gridDescription))",
+                    color: gridSizeColor
+                )
+
+                SettingSummaryRow(
                     icon: "cpu",
                     label: "Difficulty",
                     value: difficultyName,
@@ -291,12 +364,12 @@ struct GameSetupView: View {
 
             // Fleet info
             VStack(spacing: 8) {
-                Text("Your Fleet")
+                Text("Your Fleet (\(selectedGridSize.shipCount) ships)")
                     .font(.headline)
                     .foregroundStyle(.white)
 
                 HStack(spacing: 8) {
-                    ForEach(Board.fleetSizes, id: \.self) { size in
+                    ForEach(Array(selectedGridSize.fleetSizes.enumerated()), id: \.offset) { _, size in
                         HStack(spacing: 2) {
                             ForEach(0..<size, id: \.self) { _ in
                                 RoundedRectangle(cornerRadius: 2)
@@ -365,6 +438,8 @@ struct GameSetupView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             switch currentStep {
             case .mode:
+                currentStep = .gridSize
+            case .gridSize:
                 currentStep = .difficulty
             case .difficulty:
                 currentStep = selectedMode == .ranked ? .ranked : .confirm
@@ -389,8 +464,10 @@ struct GameSetupView: View {
             switch currentStep {
             case .mode:
                 break
-            case .difficulty:
+            case .gridSize:
                 currentStep = .mode
+            case .difficulty:
+                currentStep = .gridSize
             case .ranked:
                 currentStep = .difficulty
             case .confirm:
@@ -407,7 +484,8 @@ struct GameSetupView: View {
         viewModel.startNewGame(
             mode: selectedMode,
             difficulty: selectedDifficulty,
-            split: selectedMode == .ranked ? selectedSplit : nil
+            split: selectedMode == .ranked ? selectedSplit : nil,
+            gridSize: selectedGridSize
         )
         onStart()
     }
@@ -429,6 +507,22 @@ struct GameSetupView: View {
         case .hard: return .red
         }
     }
+
+    private var gridSizeIcon: String {
+        switch selectedGridSize {
+        case .small: return "square.grid.2x2"
+        case .medium: return "square.grid.3x3"
+        case .large: return "square.grid.4x3fill"
+        }
+    }
+
+    private var gridSizeColor: Color {
+        switch selectedGridSize {
+        case .small: return .green
+        case .medium: return .orange
+        case .large: return .blue
+        }
+    }
 }
 
 // MARK: - Supporting Views
@@ -439,9 +533,9 @@ struct SetupProgressView: View {
 
     private var steps: [GameSetupView.SetupStep] {
         if selectedMode == .ranked {
-            return [.mode, .difficulty, .ranked, .confirm]
+            return [.mode, .gridSize, .difficulty, .ranked, .confirm]
         } else {
-            return [.mode, .difficulty, .confirm]
+            return [.mode, .gridSize, .difficulty, .confirm]
         }
     }
 
@@ -587,6 +681,87 @@ struct DifficultyCard: View {
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.6))
                         .lineLimit(2)
+                }
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundStyle(isSelected ? color : .white.opacity(0.3))
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.white.opacity(isSelected ? 0.15 : 0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(isSelected ? color : .clear, lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct GridSizeCard: View {
+    let gridSize: GridSize
+    let isSelected: Bool
+    let title: String
+    let description: String
+    let icon: String
+    let color: Color
+    let shipCount: Int
+    let tileInfo: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.2))
+                        .frame(width: 50, height: 50)
+
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundStyle(color)
+                }
+
+                // Content
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(title)
+                            .font(.headline)
+                            .foregroundStyle(.white)
+
+                        Text(tileInfo)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+
+                    Text(description)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.6))
+                        .lineLimit(2)
+
+                    // Ship preview
+                    HStack(spacing: 4) {
+                        ForEach(Array(gridSize.fleetSizes.enumerated()), id: \.offset) { _, size in
+                            HStack(spacing: 1) {
+                                ForEach(0..<size, id: \.self) { _ in
+                                    RoundedRectangle(cornerRadius: 1)
+                                        .fill(color.opacity(0.6))
+                                        .frame(width: 5, height: 8)
+                                }
+                            }
+                            .padding(2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(.white.opacity(0.08))
+                            )
+                        }
+                    }
                 }
 
                 Spacer()

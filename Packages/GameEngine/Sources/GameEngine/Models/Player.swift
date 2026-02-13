@@ -20,17 +20,19 @@ public struct Player: Codable, Identifiable, Equatable, Sendable {
     }
 
     /// Create a human player with the appropriate power-up kit for the game mode
-    public static func human(mode: GameMode) -> Player {
+    public static func human(mode: GameMode, boardSize: Int = Board.size) -> Player {
         Player(
             isHuman: true,
+            board: Board(boardSize: boardSize),
             powerUpKit: .forMode(mode)
         )
     }
 
     /// Create an AI player with the appropriate power-up kit for the game mode
-    public static func ai(mode: GameMode) -> Player {
+    public static func ai(mode: GameMode, boardSize: Int = Board.size) -> Player {
         Player(
             isHuman: false,
+            board: Board(boardSize: boardSize),
             powerUpKit: .forMode(mode)
         )
     }
@@ -40,7 +42,12 @@ public struct Player: Codable, Identifiable, Equatable, Sendable {
         board.isAllSunk() && !board.ships.isEmpty
     }
 
-    /// Check if placement is complete
+    /// Check if placement is complete for a given grid size
+    public func hasCompletedPlacement(for gridSize: GridSize) -> Bool {
+        board.ships.count == gridSize.fleetSizes.count
+    }
+
+    /// Check if placement is complete (classic 10x10)
     public var hasCompletedPlacement: Bool {
         board.ships.count == Board.fleetSizes.count
     }

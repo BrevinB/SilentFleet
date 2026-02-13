@@ -21,22 +21,27 @@ public enum PowerUpAction: Codable, Equatable, Sendable {
         }
     }
 
-    /// Returns all coordinates affected by this power-up action
+    /// Returns all coordinates affected by this power-up action (using default 10x10 board)
     public var affectedCoordinates: [Coordinate] {
+        affectedCoordinates(boardSize: Board.size)
+    }
+
+    /// Returns all coordinates affected by this power-up action for a given board size
+    public func affectedCoordinates(boardSize: Int) -> [Coordinate] {
         switch self {
         case .sonarPing(let center):
             var coords: [Coordinate] = []
             for dr in -1...1 {
                 for dc in -1...1 {
                     let coord = Coordinate(row: center.row + dr, col: center.col + dc)
-                    if coord.isValid {
+                    if coord.isValid(forBoardSize: boardSize) {
                         coords.append(coord)
                     }
                 }
             }
             return coords
         case .rowScan(let row):
-            return (0..<Board.size).map { Coordinate(row: row, col: $0) }
+            return (0..<boardSize).map { Coordinate(row: row, col: $0) }
         }
     }
 }

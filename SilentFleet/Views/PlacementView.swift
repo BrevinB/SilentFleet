@@ -23,7 +23,13 @@ struct PlacementView: View {
     @State private var floatingShipValid: Bool = false
     @State private var showingPlacementTooltips: Bool = false
 
-    private let boardCellSize: CGFloat = 32
+    private var boardCellSize: CGFloat {
+        switch viewModel.currentBoardSize {
+        case 1...6: return 42
+        case 7...8: return 36
+        default: return 32
+        }
+    }
     private let boardSpacing: CGFloat = 2
     private let boardLabelWidth: CGFloat = 20
     private let boardPadding: CGFloat = 8
@@ -54,7 +60,7 @@ struct PlacementView: View {
         let row = Int(localY / cellWithSpacing)
 
         // Check bounds
-        guard row >= 0 && row < Board.size && col >= 0 && col < Board.size else {
+        guard row >= 0 && row < viewModel.currentBoardSize && col >= 0 && col < viewModel.currentBoardSize else {
             return nil
         }
 
@@ -63,10 +69,11 @@ struct PlacementView: View {
 
     // Check if a ship placement would be valid
     private func isValidPlacement(at coord: Coordinate, size: Int) -> Bool {
+        let bs = viewModel.currentBoardSize
         let origin = centeredOrigin(for: coord, shipSize: size, orientation: viewModel.placementOrientation)
         let ship = Ship(size: size, origin: origin, orientation: viewModel.placementOrientation)
-        guard ship.isWithinBounds else { return false }
-        if case .success = PlacementValidator.canPlace(ship: ship, on: viewModel.placedShips) {
+        guard ship.isWithinBounds(boardSize: bs) else { return false }
+        if case .success = PlacementValidator.canPlace(ship: ship, on: viewModel.placedShips, boardSize: bs) {
             return true
         }
         return false
@@ -98,9 +105,10 @@ struct PlacementView: View {
 
     // Check if preview placement is valid
     private var isPreviewValid: Bool {
+        let bs = viewModel.currentBoardSize
         guard let preview = previewShip else { return false }
-        guard preview.isWithinBounds else { return false }
-        if case .success = PlacementValidator.canPlace(ship: preview, on: viewModel.placedShips) {
+        guard preview.isWithinBounds(boardSize: bs) else { return false }
+        if case .success = PlacementValidator.canPlace(ship: preview, on: viewModel.placedShips, boardSize: bs) {
             return true
         }
         return false
@@ -154,6 +162,7 @@ struct PlacementView: View {
                     orientation: viewModel.placementOrientation,
                     skin: inventory.equippedSkin,
                     theme: inventory.equippedTheme,
+                    boardDimension: viewModel.currentBoardSize,
                     hoverCoordinate: $hoverCoordinate,
                     isDragging: $isDragging,
                     boardFrame: $boardFrame,
@@ -168,6 +177,7 @@ struct PlacementView: View {
                         SoundManager.shared.buttonTap()
                     },
                     onDragEnd: { coord in
+                        let bs = viewModel.currentBoardSize
                         // Handle drag end for both new ships and repositioned ships
                         if let movedShip = draggedPlacedShip {
                             // Repositioning a placed ship
@@ -175,8 +185,8 @@ struct PlacementView: View {
                             let newShip = Ship(size: movedShip.size, origin: origin, orientation: movedShip.orientation)
 
                             // Check if valid
-                            if newShip.isWithinBounds,
-                               case .success = PlacementValidator.canPlace(ship: newShip, on: viewModel.placedShips) {
+                            if newShip.isWithinBounds(boardSize: bs),
+                               case .success = PlacementValidator.canPlace(ship: newShip, on: viewModel.placedShips, boardSize: bs) {
                                 // Place in new position
                                 viewModel.placedShips.append(newShip)
                                 HapticManager.shared.shipPlaced()
@@ -197,12 +207,12 @@ struct PlacementView: View {
                             let ship = Ship(size: selected.size, origin: origin, orientation: viewModel.placementOrientation)
 
                             // Check if valid
-                            guard ship.isWithinBounds else {
+                            guard ship.isWithinBounds(boardSize: bs) else {
                                 HapticManager.shared.invalidPlacement()
                                 SoundManager.shared.invalidPlacement()
                                 return
                             }
-                            if case .failure = PlacementValidator.canPlace(ship: ship, on: viewModel.placedShips) {
+                            if case .failure = PlacementValidator.canPlace(ship: ship, on: viewModel.placedShips, boardSize: bs) {
                                 HapticManager.shared.invalidPlacement()
                                 SoundManager.shared.invalidPlacement()
                                 return
@@ -265,6 +275,7 @@ struct PlacementView: View {
                         }
                     },
                     onDragEnded: { size, location in
+                        let bs = viewModel.currentBoardSize
                         isDragging = false
                         isDraggingFromSelection = false
                         draggedShipSize = nil
@@ -275,8 +286,8 @@ struct PlacementView: View {
                             let ship = Ship(size: size, origin: origin, orientation: viewModel.placementOrientation)
 
                             // Check if valid and place immediately
-                            if ship.isWithinBounds,
-                               case .success = PlacementValidator.canPlace(ship: ship, on: viewModel.placedShips) {
+                            if ship.isWithinBounds(boardSize: bs),
+                               case .success = PlacementValidator.canPlace(ship: ship, on: viewModel.placedShips, boardSize: bs) {
                                 viewModel.placedShips.append(ship)
                                 if let index = viewModel.remainingFleetSizes.firstIndex(of: ship.size) {
                                     viewModel.remainingFleetSizes.remove(at: index)
@@ -564,6 +575,7 @@ struct PlacementBoardView: View {
     let orientation: Orientation
     let skin: ShipSkin
     let theme: BoardTheme
+    let boardDimension: Int
     @Binding var hoverCoordinate: Coordinate?
     @Binding var isDragging: Bool
     @Binding var boardFrame: CGRect
@@ -573,8 +585,14 @@ struct PlacementBoardView: View {
     let onDragEnd: (Coordinate) -> Void
     let onDragCancel: () -> Void
 
-    private let gridSize = Board.size
-    private let cellSize: CGFloat = 32
+    private var gridSize: Int { boardDimension }
+    private var cellSize: CGFloat {
+        switch gridSize {
+        case 1...6: return 42
+        case 7...8: return 36
+        default: return 32
+        }
+    }
     private let spacing: CGFloat = 2
     private let labelWidth: CGFloat = 20
 

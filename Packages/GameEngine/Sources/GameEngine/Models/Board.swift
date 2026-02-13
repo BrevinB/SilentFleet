@@ -1,16 +1,19 @@
 import Foundation
 
-/// Represents a player's 10x10 game board with ships and shot history
+/// Represents a player's game board with ships and shot history
 public struct Board: Codable, Equatable, Sendable {
-    /// Board dimensions
+    /// Default board dimensions (classic 10x10)
     public static let size = 10
 
-    /// Standard fleet configuration: total 23 tiles
+    /// Standard fleet configuration for classic 10x10: total 23 tiles
     /// [Carrier(5), Battleship(4), Cruiser(3), Submarine(3), Destroyer(2), Destroyer(2), Patrol(1), Patrol(1), Patrol(1)]
     public static let fleetSizes = [5, 4, 3, 3, 2, 2, 1, 1, 1]
 
-    /// Total number of tiles occupied by all ships
+    /// Total number of tiles occupied by all ships (classic fleet)
     public static let totalFleetTiles = fleetSizes.reduce(0, +)  // 23
+
+    /// The actual board size for this instance
+    public let boardSize: Int
 
     /// Ships placed on this board
     public private(set) var ships: [Ship]
@@ -18,9 +21,10 @@ public struct Board: Codable, Equatable, Sendable {
     /// Coordinates that have been shot at (opponent's view of incoming fire)
     public private(set) var incomingShots: Set<Coordinate>
 
-    public init(ships: [Ship] = [], incomingShots: Set<Coordinate> = []) {
+    public init(ships: [Ship] = [], incomingShots: Set<Coordinate> = [], boardSize: Int = 10) {
         self.ships = ships
         self.incomingShots = incomingShots
+        self.boardSize = boardSize
     }
 
     /// Find the ship at a given coordinate, if any
@@ -68,7 +72,7 @@ public struct Board: Codable, Equatable, Sendable {
     public var adjacentToShipsCoordinates: Set<Coordinate> {
         var adjacent = Set<Coordinate>()
         for ship in ships {
-            adjacent.formUnion(ship.adjacentCoordinates)
+            adjacent.formUnion(ship.adjacentCoordinates(boardSize: boardSize))
         }
         return adjacent.subtracting(occupiedCoordinates)
     }
@@ -99,5 +103,18 @@ public struct Board: Codable, Equatable, Sendable {
     /// Check if any ship occupies any of the given coordinates
     public func hasShipInAny(of coordinates: [Coordinate]) -> Bool {
         coordinates.contains { hasShip(at: $0) }
+    }
+
+    // MARK: - Custom Decodable for backward compatibility
+
+    private enum CodingKeys: String, CodingKey {
+        case boardSize, ships, incomingShots
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        boardSize = try container.decodeIfPresent(Int.self, forKey: .boardSize) ?? 10
+        ships = try container.decode([Ship].self, forKey: .ships)
+        incomingShots = try container.decode(Set<Coordinate>.self, forKey: .incomingShots)
     }
 }

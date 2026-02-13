@@ -63,16 +63,26 @@ public struct Ship: Codable, Identifiable, Equatable, Sendable {
         coordinates.contains(coord)
     }
 
-    /// Check if all coordinates are within board bounds
+    /// Check if all coordinates are within default board bounds (10x10)
     public var isWithinBounds: Bool {
-        coordinates.allSatisfy { $0.isValid }
+        isWithinBounds(boardSize: Board.size)
     }
 
-    /// Returns all coordinates adjacent to this ship (for no-touch validation)
+    /// Check if all coordinates are within board bounds for a given board size
+    public func isWithinBounds(boardSize: Int) -> Bool {
+        coordinates.allSatisfy { $0.isValid(forBoardSize: boardSize) }
+    }
+
+    /// Returns all coordinates adjacent to this ship (for no-touch validation) using default board size
     public var adjacentCoordinates: Set<Coordinate> {
+        adjacentCoordinates(boardSize: Board.size)
+    }
+
+    /// Returns all coordinates adjacent to this ship for a given board size
+    public func adjacentCoordinates(boardSize: Int) -> Set<Coordinate> {
         var adjacent = Set<Coordinate>()
         for coord in coordinates {
-            for neighbor in coord.allNeighbors {
+            for neighbor in coord.allNeighbors(boardSize: boardSize) {
                 if !coordinates.contains(neighbor) {
                     adjacent.insert(neighbor)
                 }

@@ -18,7 +18,8 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
     public func generatePlacement(
         for fleetSizes: [Int],
         mode: GameMode,
-        splitOrientation: BoardSplit?
+        splitOrientation: BoardSplit?,
+        boardSize: Int
     ) -> [Ship] {
         // Randomly select a placement profile
         let profile = PlacementProfile.allCases.randomElement() ?? .scattered
@@ -27,7 +28,8 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
             profile: profile,
             fleetSizes: fleetSizes,
             mode: mode,
-            splitOrientation: splitOrientation
+            splitOrientation: splitOrientation,
+            boardSize: boardSize
         )
     }
 
@@ -35,20 +37,22 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
         profile: PlacementProfile,
         fleetSizes: [Int],
         mode: GameMode,
-        splitOrientation: BoardSplit?
+        splitOrientation: BoardSplit?,
+        boardSize: Int
     ) -> [Ship] {
         let sortedSizes = fleetSizes.sorted(by: >)
         var placedShips: [Ship] = []
 
         // Generate scoring map based on profile
-        let scoreMap = generateScoreMap(for: profile)
+        let scoreMap = generateScoreMap(for: profile, boardSize: boardSize)
 
         for size in sortedSizes {
             let validPlacements = PlacementValidator.validPlacements(
                 forShipOfSize: size,
                 existingShips: placedShips,
                 mode: mode,
-                splitOrientation: splitOrientation
+                splitOrientation: splitOrientation,
+                boardSize: boardSize
             )
 
             guard !validPlacements.isEmpty else { continue }
@@ -62,7 +66,7 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
                 case .scattered:
                     score += scatteredBonus(for: ship, existingShips: placedShips)
                 case .halfBoard:
-                    score += halfBoardBonus(for: ship)
+                    score += halfBoardBonus(for: ship, boardSize: boardSize)
                 default:
                     break
                 }
@@ -85,14 +89,16 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
 
         // Validate ranked constraints
         if mode == .ranked, let split = splitOrientation {
-            if case .failure = PlacementValidator.validate(ships: placedShips, mode: mode, splitOrientation: split) {
+            let gridSize = GridSize.allCases.first { $0.boardSize == boardSize } ?? .large
+            if case .failure = PlacementValidator.validate(ships: placedShips, mode: mode, splitOrientation: split, gridSize: gridSize) {
                 // Retry with different profile or fallback
                 let alternateProfile = PlacementProfile.allCases.filter { $0 != profile }.randomElement() ?? .scattered
                 return generateWithProfile(
                     profile: alternateProfile,
                     fleetSizes: fleetSizes,
                     mode: mode,
-                    splitOrientation: split
+                    splitOrientation: split,
+                    boardSize: boardSize
                 )
             }
         }
@@ -100,23 +106,25 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
         return placedShips
     }
 
-    private func generateScoreMap(for profile: PlacementProfile) -> [[Double]] {
-        var map = Array(repeating: Array(repeating: 5.0, count: Board.size), count: Board.size)
+    private func generateScoreMap(for profile: PlacementProfile, boardSize: Int) -> [[Double]] {
+        var map = Array(repeating: Array(repeating: 5.0, count: boardSize), count: boardSize)
+        let center = Double(boardSize - 1) / 2.0
+        let half = boardSize / 2
 
         switch profile {
         case .edgeHugger:
             // High scores on edges and corners
-            for row in 0..<Board.size {
-                for col in 0..<Board.size {
-                    if row == 0 || row == Board.size - 1 || col == 0 || col == Board.size - 1 {
+            for row in 0..<boardSize {
+                for col in 0..<boardSize {
+                    if row == 0 || row == boardSize - 1 || col == 0 || col == boardSize - 1 {
                         map[row][col] += 8.0
                     }
                     // Extra bonus for corners
-                    if (row == 0 || row == Board.size - 1) && (col == 0 || col == Board.size - 1) {
+                    if (row == 0 || row == boardSize - 1) && (col == 0 || col == boardSize - 1) {
                         map[row][col] += 5.0
                     }
                     // Penalty for center
-                    let centerDist = abs(Double(row) - 4.5) + abs(Double(col) - 4.5)
+                    let centerDist = abs(Double(row) - center) + abs(Double(col) - center)
                     if centerDist < 3 {
                         map[row][col] -= 4.0
                     }
@@ -125,27 +133,27 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
 
         case .centerMass:
             // High scores in center (reverse psychology)
-            for row in 0..<Board.size {
-                for col in 0..<Board.size {
-                    let centerDist = abs(Double(row) - 4.5) + abs(Double(col) - 4.5)
+            for row in 0..<boardSize {
+                for col in 0..<boardSize {
+                    let centerDist = abs(Double(row) - center) + abs(Double(col) - center)
                     map[row][col] += max(0, 8 - centerDist)
                 }
             }
 
         case .diagonal:
             // High scores along diagonals
-            for row in 0..<Board.size {
-                for col in 0..<Board.size {
+            for row in 0..<boardSize {
+                for col in 0..<boardSize {
                     // Main diagonal
                     if row == col {
                         map[row][col] += 6.0
                     }
                     // Anti-diagonal
-                    if row + col == Board.size - 1 {
+                    if row + col == boardSize - 1 {
                         map[row][col] += 6.0
                     }
                     // Near diagonals
-                    if abs(row - col) == 1 || abs(row + col - (Board.size - 1)) == 1 {
+                    if abs(row - col) == 1 || abs(row + col - (boardSize - 1)) == 1 {
                         map[row][col] += 3.0
                     }
                 }
@@ -159,9 +167,9 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
         case .halfBoard:
             // Randomly prefer one half
             let preferFirst = Bool.random()
-            for row in 0..<Board.size {
-                for col in 0..<Board.size {
-                    let inFirstHalf = row < 5 // top half
+            for row in 0..<boardSize {
+                for col in 0..<boardSize {
+                    let inFirstHalf = row < half
                     if inFirstHalf == preferFirst {
                         map[row][col] += 5.0
                     }
@@ -170,8 +178,8 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
         }
 
         // Add anti-checkerboard bias (avoid parity hunting)
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
                 if (row + col) % 2 == 1 {
                     map[row][col] += 2.0
                 }
@@ -183,8 +191,9 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
 
     private func calculateBaseScore(for ship: Ship, scoreMap: [[Double]]) -> Double {
         var total = 0.0
+        let boardSize = scoreMap.count
         for coord in ship.coordinates {
-            if coord.isValid {
+            if coord.isValid(forBoardSize: boardSize) {
                 total += scoreMap[coord.row][coord.col]
             }
         }
@@ -209,12 +218,13 @@ public struct InvertedHeatPlacement: AIPlacementStrategy, Sendable {
         return min(minDist * 2, 20)
     }
 
-    private func halfBoardBonus(for ship: Ship) -> Double {
+    private func halfBoardBonus(for ship: Ship, boardSize: Int) -> Double {
+        let half = boardSize / 2
         // Reward ships that are entirely in one half
-        let inTop = ship.coordinates.allSatisfy { $0.row < 5 }
-        let inBottom = ship.coordinates.allSatisfy { $0.row >= 5 }
-        let inLeft = ship.coordinates.allSatisfy { $0.col < 5 }
-        let inRight = ship.coordinates.allSatisfy { $0.col >= 5 }
+        let inTop = ship.coordinates.allSatisfy { $0.row < half }
+        let inBottom = ship.coordinates.allSatisfy { $0.row >= half }
+        let inLeft = ship.coordinates.allSatisfy { $0.col < half }
+        let inRight = ship.coordinates.allSatisfy { $0.col >= half }
 
         if inTop || inBottom || inLeft || inRight {
             return 5.0
