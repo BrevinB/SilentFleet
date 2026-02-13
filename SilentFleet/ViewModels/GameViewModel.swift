@@ -507,7 +507,13 @@ final class GameViewModel: ObservableObject {
     // MARK: - Save/Load
 
     func saveGame() {
-        guard let state = gameState, !state.isGameOver else { return }
+        guard let state = gameState else { return }
+        if state.isGameOver {
+            Task {
+                try? await matchStore.delete(id: state.id)
+            }
+            return
+        }
         Task {
             try? await matchStore.save(state)
         }
