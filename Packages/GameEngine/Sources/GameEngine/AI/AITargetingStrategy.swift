@@ -40,9 +40,10 @@ public struct RandomTargeting: AITargetingStrategy, Sendable {
     public init() {}
 
     public func selectTarget(board: Board, previousResults: [TurnResult]) -> Coordinate {
+        let boardSize = board.boardSize
         var unshot: [Coordinate] = []
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
                 let coord = Coordinate(row: row, col: col)
                 if !board.hasBeenShot(at: coord) {
                     unshot.append(coord)
@@ -69,14 +70,16 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
     }
 
     public func selectTarget(board: Board, previousResults: [TurnResult]) -> Coordinate {
+        let boardSize = board.boardSize
+
         // Get all unshot coordinates
-        let unshotCoords = getUnshotCoordinates(board: board)
+        let unshotCoords = getUnshotCoordinates(board: board, boardSize: boardSize)
         guard !unshotCoords.isEmpty else {
             return Coordinate(row: 0, col: 0)
         }
 
         // Find unhit hits (hits that aren't part of a sunk ship)
-        let activeHits = getActiveHits(board: board)
+        let activeHits = getActiveHits(board: board, boardSize: boardSize)
 
         // If we have active hits, ALWAYS pursue them (no ship left behind!)
         // The accuracy only affects hunt mode decisions
@@ -85,23 +88,23 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
             // Accuracy affects whether we make optimal vs random adjacent choice
             let makeSmartChoice = Double.random(in: 0...1) < accuracy
             if makeSmartChoice {
-                return selectTargetModeShot(activeHits: activeHits, board: board, unshotCoords: unshotCoords)
+                return selectTargetModeShot(activeHits: activeHits, board: board, unshotCoords: unshotCoords, boardSize: boardSize)
             } else {
                 // Even when "not smart", still target near hits, just pick randomly among them
                 let randomHit = activeHits.randomElement()!
-                let neighbors = randomHit.orthogonalNeighbors.filter { unshotCoords.contains($0) }
+                let neighbors = randomHit.orthogonalNeighbors(boardSize: boardSize).filter { unshotCoords.contains($0) }
                 if let target = neighbors.randomElement() {
                     return target
                 }
                 // If no neighbors available, use smart targeting anyway
-                return selectTargetModeShot(activeHits: activeHits, board: board, unshotCoords: unshotCoords)
+                return selectTargetModeShot(activeHits: activeHits, board: board, unshotCoords: unshotCoords, boardSize: boardSize)
             }
         }
 
         // HUNT MODE: Looking for ships
         let makeSmartChoice = Double.random(in: 0...1) < accuracy
         if useProbabilityDensity && makeSmartChoice {
-            return selectProbabilityBasedShot(board: board, unshotCoords: unshotCoords)
+            return selectProbabilityBasedShot(board: board, unshotCoords: unshotCoords, boardSize: boardSize)
         } else if makeSmartChoice {
             return selectCheckerboardShot(unshotCoords: unshotCoords)
         } else {
@@ -115,10 +118,11 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
     private func selectTargetModeShot(
         activeHits: [Coordinate],
         board: Board,
-        unshotCoords: Set<Coordinate>
+        unshotCoords: Set<Coordinate>,
+        boardSize: Int
     ) -> Coordinate {
         // Group hits into clusters (adjacent hits likely from same ship)
-        let clusters = groupHitsIntoClusters(activeHits)
+        let clusters = groupHitsIntoClusters(activeHits, boardSize: boardSize)
 
         // Prioritize clusters with 2+ hits (we know the ship's orientation)
         let sortedClusters = clusters.sorted { $0.count > $1.count }
@@ -126,7 +130,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         for cluster in sortedClusters {
             if cluster.count >= 2 {
                 // Try to continue this line
-                if let lineShot = continueHitLine(hits: cluster, unshotCoords: unshotCoords) {
+                if let lineShot = continueHitLine(hits: cluster, unshotCoords: unshotCoords, boardSize: boardSize) {
                     return lineShot
                 }
             }
@@ -135,7 +139,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         // For single-hit clusters or when line extension fails, try adjacent cells
         for cluster in sortedClusters {
             for hit in cluster {
-                let neighbors = hit.orthogonalNeighbors.filter { unshotCoords.contains($0) }
+                let neighbors = hit.orthogonalNeighbors(boardSize: boardSize).filter { unshotCoords.contains($0) }
                 if let target = neighbors.randomElement() {
                     return target
                 }
@@ -147,7 +151,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
     }
 
     /// Groups hits into clusters of adjacent coordinates (likely from same ship)
-    private func groupHitsIntoClusters(_ hits: [Coordinate]) -> [[Coordinate]] {
+    private func groupHitsIntoClusters(_ hits: [Coordinate], boardSize: Int) -> [[Coordinate]] {
         guard !hits.isEmpty else { return [] }
 
         var remaining = Set(hits)
@@ -162,7 +166,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
                 cluster.append(current)
 
                 // Find adjacent hits
-                for neighbor in current.orthogonalNeighbors {
+                for neighbor in current.orthogonalNeighbors(boardSize: boardSize) {
                     if remaining.contains(neighbor) {
                         remaining.remove(neighbor)
                         toProcess.append(neighbor)
@@ -176,7 +180,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         return clusters
     }
 
-    private func continueHitLine(hits: [Coordinate], unshotCoords: Set<Coordinate>) -> Coordinate? {
+    private func continueHitLine(hits: [Coordinate], unshotCoords: Set<Coordinate>, boardSize: Int) -> Coordinate? {
         // Check if hits form a horizontal line (all same row)
         let sortedByCol = hits.sorted { $0.col < $1.col }
         if sortedByCol.allSatisfy({ $0.row == sortedByCol[0].row }) {
@@ -206,7 +210,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
             }
             // Try extending right
             let rightCol = sortedByCol.last!.col + 1
-            if rightCol < Board.size {
+            if rightCol < boardSize {
                 let rightCoord = Coordinate(row: row, col: rightCol)
                 if unshotCoords.contains(rightCoord) {
                     return rightCoord
@@ -242,7 +246,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
             }
             // Try extending down
             let downRow = sortedByRow.last!.row + 1
-            if downRow < Board.size {
+            if downRow < boardSize {
                 let downCoord = Coordinate(row: downRow, col: col)
                 if unshotCoords.contains(downCoord) {
                     return downCoord
@@ -266,7 +270,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         return unshotCoords.randomElement() ?? Coordinate(row: 0, col: 0)
     }
 
-    private func selectProbabilityBasedShot(board: Board, unshotCoords: Set<Coordinate>) -> Coordinate {
+    private func selectProbabilityBasedShot(board: Board, unshotCoords: Set<Coordinate>, boardSize: Int) -> Coordinate {
         // Calculate probability density based on where ships could fit
         var density: [Coordinate: Int] = [:]
 
@@ -281,16 +285,16 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         for size in remainingShipSizes {
             for coord in unshotCoords {
                 // Check horizontal placement starting at various positions
-                for startCol in max(0, coord.col - size + 1)...min(Board.size - size, coord.col) {
-                    if canPlaceShip(row: coord.row, col: startCol, size: size, horizontal: true, board: board) {
+                for startCol in max(0, coord.col - size + 1)...min(boardSize - size, coord.col) {
+                    if canPlaceShip(row: coord.row, col: startCol, size: size, horizontal: true, board: board, boardSize: boardSize) {
                         // This placement would cover `coord`
                         density[coord, default: 0] += 1
                     }
                 }
 
                 // Check vertical placement
-                for startRow in max(0, coord.row - size + 1)...min(Board.size - size, coord.row) {
-                    if canPlaceShip(row: startRow, col: coord.col, size: size, horizontal: false, board: board) {
+                for startRow in max(0, coord.row - size + 1)...min(boardSize - size, coord.row) {
+                    if canPlaceShip(row: startRow, col: coord.col, size: size, horizontal: false, board: board, boardSize: boardSize) {
                         density[coord, default: 0] += 1
                     }
                 }
@@ -305,12 +309,12 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         return topCandidates.randomElement() ?? unshotCoords.randomElement() ?? Coordinate(row: 0, col: 0)
     }
 
-    private func canPlaceShip(row: Int, col: Int, size: Int, horizontal: Bool, board: Board) -> Bool {
+    private func canPlaceShip(row: Int, col: Int, size: Int, horizontal: Bool, board: Board, boardSize: Int) -> Bool {
         for i in 0..<size {
             let checkRow = horizontal ? row : row + i
             let checkCol = horizontal ? col + i : col
 
-            guard checkRow >= 0, checkRow < Board.size, checkCol >= 0, checkCol < Board.size else {
+            guard checkRow >= 0, checkRow < boardSize, checkCol >= 0, checkCol < boardSize else {
                 return false
             }
 
@@ -331,10 +335,10 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
 
     // MARK: - Helpers
 
-    private func getUnshotCoordinates(board: Board) -> Set<Coordinate> {
+    private func getUnshotCoordinates(board: Board, boardSize: Int) -> Set<Coordinate> {
         var unshot = Set<Coordinate>()
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
                 let coord = Coordinate(row: row, col: col)
                 if !board.hasBeenShot(at: coord) {
                     unshot.insert(coord)
@@ -344,12 +348,12 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         return unshot
     }
 
-    private func getActiveHits(board: Board) -> [Coordinate] {
+    private func getActiveHits(board: Board, boardSize: Int) -> [Coordinate] {
         // Find coordinates that have been hit but the ship isn't sunk yet
         var activeHits: [Coordinate] = []
 
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
                 let coord = Coordinate(row: row, col: col)
                 if board.hasBeenShot(at: coord) {
                     if let ship = board.ship(at: coord), !ship.isSunk {

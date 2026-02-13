@@ -31,6 +31,7 @@ final class GameViewModel: ObservableObject {
     private(set) var gameMode: GameMode = .casual
     private(set) var aiDifficulty: AIDifficulty = .medium
     private(set) var boardSplit: BoardSplit?
+    private(set) var gridSize: GridSize = .large
 
     // AI targeting strategy
     private var aiTargetingStrategy: AITargetingStrategy?
@@ -40,6 +41,11 @@ final class GameViewModel: ObservableObject {
 
     // Fleet sizes remaining to place
     @Published var remainingFleetSizes: [Int] = Board.fleetSizes
+
+    /// The current board dimension for this game
+    var currentBoardSize: Int {
+        gameState?.boardDimension ?? gridSize.boardSize
+    }
 
     // MARK: - Computed Properties
 
@@ -93,10 +99,11 @@ final class GameViewModel: ObservableObject {
 
     // MARK: - Game Setup
 
-    func startNewGame(mode: GameMode, difficulty: AIDifficulty, split: BoardSplit? = nil) {
+    func startNewGame(mode: GameMode, difficulty: AIDifficulty, split: BoardSplit? = nil, gridSize: GridSize = .large) {
         gameMode = mode
         aiDifficulty = difficulty
         boardSplit = mode == .ranked ? (split ?? .topBottom) : nil
+        self.gridSize = gridSize
 
         // Create AI targeting strategy
         aiTargetingStrategy = AITargetingFactory.strategy(for: difficulty)
@@ -104,12 +111,13 @@ final class GameViewModel: ObservableObject {
         gameState = GameState.soloGame(
             mode: mode,
             aiDifficulty: difficulty,
+            gridSize: gridSize,
             rankedSplitOrientation: boardSplit
         )
 
         // Reset placement state
         placedShips = []
-        remainingFleetSizes = Board.fleetSizes
+        remainingFleetSizes = gridSize.fleetSizes
         selectedShip = nil
         selectedPowerUp = nil
         lastTurnResult = nil
@@ -150,12 +158,13 @@ final class GameViewModel: ObservableObject {
     func autoPopulateShips() {
         // Use the random placement strategy to generate ships
         let strategy = RandomPlacement()
-        let allFleetSizes = Board.fleetSizes
+        let allFleetSizes = gridSize.fleetSizes
 
         let ships = strategy.generatePlacement(
             for: allFleetSizes,
             mode: gameMode,
-            splitOrientation: boardSplit
+            splitOrientation: boardSplit,
+            boardSize: gridSize.boardSize
         )
 
         // Replace current placement with generated ships
@@ -176,9 +185,9 @@ final class GameViewModel: ObservableObject {
             orientation: placementOrientation
         )
 
-        guard testShip.isWithinBounds else { return false }
+        guard testShip.isWithinBounds(boardSize: gridSize.boardSize) else { return false }
 
-        if case .success = PlacementValidator.canPlace(ship: testShip, on: placedShips) {
+        if case .success = PlacementValidator.canPlace(ship: testShip, on: placedShips, boardSize: gridSize.boardSize) {
             return true
         }
         return false
@@ -194,7 +203,7 @@ final class GameViewModel: ObservableObject {
         )
 
         // Validate placement
-        let result = PlacementValidator.canPlace(ship: newShip, on: placedShips)
+        let result = PlacementValidator.canPlace(ship: newShip, on: placedShips, boardSize: gridSize.boardSize)
 
         switch result {
         case .success:
@@ -231,7 +240,8 @@ final class GameViewModel: ObservableObject {
         let result = PlacementValidator.validate(
             ships: placedShips,
             mode: gameMode,
-            splitOrientation: boardSplit
+            splitOrientation: boardSplit,
+            gridSize: gridSize
         )
 
         switch result {
@@ -239,16 +249,17 @@ final class GameViewModel: ObservableObject {
             SoundManager.shared.confirm()
 
             // Set player's board
-            state.player1.board = Board(ships: placedShips)
+            state.player1.board = Board(ships: placedShips, boardSize: gridSize.boardSize)
 
             // Generate AI placement
             let aiStrategy = AIPlacementFactory.strategy(for: aiDifficulty)
             let aiShips = aiStrategy.generatePlacement(
-                for: Board.fleetSizes,
+                for: gridSize.fleetSizes,
                 mode: gameMode,
-                splitOrientation: boardSplit
+                splitOrientation: boardSplit,
+                boardSize: gridSize.boardSize
             )
-            state.player2.board = Board(ships: aiShips)
+            state.player2.board = Board(ships: aiShips, boardSize: gridSize.boardSize)
 
             // Transition to next phase
             TurnEngine.finishPlacement(state: &state)
@@ -327,7 +338,7 @@ final class GameViewModel: ObservableObject {
         // Get opponent's board and check for ships
         let opponentIndex = 1 - playerIndex
         let opponent = state.player(at: opponentIndex)
-        let affectedCoords = action.affectedCoordinates
+        let affectedCoords = action.affectedCoordinates(boardSize: currentBoardSize)
         let detected = opponent.board.hasShipInAny(of: affectedCoords)
 
         // For sonar, find actual ship coordinates
@@ -532,6 +543,7 @@ final class GameViewModel: ObservableObject {
         gameMode = state.mode
         aiDifficulty = state.aiDifficulty ?? .medium
         boardSplit = state.rankedSplitOrientation
+        gridSize = state.gridSize
         aiTargetingStrategy = AITargetingFactory.strategy(for: aiDifficulty)
 
         // Reset UI state

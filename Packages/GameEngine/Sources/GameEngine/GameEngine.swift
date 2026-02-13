@@ -17,6 +17,7 @@
 // - GameMode: Ranked vs Casual
 // - AIDifficulty: Easy, Medium, Hard
 // - BoardSplit: Top/Bottom or Left/Right for ranked constraints
+// - GridSize: Small (6x6), Medium (8x8), Large (10x10) board sizes
 
 // Power-ups:
 // - PowerUpType: Sonar Ping, Row Scan

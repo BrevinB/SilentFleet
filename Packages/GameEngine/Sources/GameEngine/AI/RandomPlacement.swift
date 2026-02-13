@@ -8,7 +8,8 @@ public struct RandomPlacement: AIPlacementStrategy, Sendable {
     public func generatePlacement(
         for fleetSizes: [Int],
         mode: GameMode,
-        splitOrientation: BoardSplit?
+        splitOrientation: BoardSplit?,
+        boardSize: Int
     ) -> [Ship] {
         // Sort by size descending (place larger ships first for better success rate)
         let sortedSizes = fleetSizes.sorted(by: >)
@@ -24,8 +25,8 @@ public struct RandomPlacement: AIPlacementStrategy, Sendable {
                 attempts += 1
 
                 // Random position and orientation
-                let row = Int.random(in: 0..<Board.size)
-                let col = Int.random(in: 0..<Board.size)
+                let row = Int.random(in: 0..<boardSize)
+                let col = Int.random(in: 0..<boardSize)
                 let orientation = Orientation.allCases.randomElement()!
 
                 let ship = Ship(
@@ -35,7 +36,7 @@ public struct RandomPlacement: AIPlacementStrategy, Sendable {
                 )
 
                 // Check if valid placement
-                if case .success = PlacementValidator.canPlace(ship: ship, on: placedShips) {
+                if case .success = PlacementValidator.canPlace(ship: ship, on: placedShips, boardSize: boardSize) {
                     placedShips.append(ship)
                     placed = true
                 }
@@ -43,7 +44,7 @@ public struct RandomPlacement: AIPlacementStrategy, Sendable {
 
             if !placed {
                 // Fallback: try all positions systematically
-                if let ship = findAnyValidPlacement(size: size, existingShips: placedShips) {
+                if let ship = findAnyValidPlacement(size: size, existingShips: placedShips, boardSize: boardSize) {
                     placedShips.append(ship)
                 }
             }
@@ -51,24 +52,26 @@ public struct RandomPlacement: AIPlacementStrategy, Sendable {
 
         // Validate ranked constraints if applicable
         if mode == .ranked, let split = splitOrientation {
-            if case .failure = PlacementValidator.validate(ships: placedShips, mode: mode, splitOrientation: split) {
+            let gridSize = GridSize.allCases.first { $0.boardSize == boardSize } ?? .large
+            if case .failure = PlacementValidator.validate(ships: placedShips, mode: mode, splitOrientation: split, gridSize: gridSize) {
                 // Retry with constraint awareness
-                return generateWithRankedConstraint(fleetSizes: sortedSizes, split: split)
+                return generateWithRankedConstraint(fleetSizes: sortedSizes, split: split, boardSize: boardSize)
             }
         }
 
         return placedShips
     }
 
-    private func findAnyValidPlacement(size: Int, existingShips: [Ship]) -> Ship? {
+    private func findAnyValidPlacement(size: Int, existingShips: [Ship], boardSize: Int) -> Ship? {
         let validPlacements = PlacementValidator.validPlacements(
             forShipOfSize: size,
-            existingShips: existingShips
+            existingShips: existingShips,
+            boardSize: boardSize
         )
         return validPlacements.randomElement()
     }
 
-    private func generateWithRankedConstraint(fleetSizes: [Int], split: BoardSplit) -> [Ship] {
+    private func generateWithRankedConstraint(fleetSizes: [Int], split: BoardSplit, boardSize: Int) -> [Ship] {
         // Ensure at least one large ship (size >= 3) in each half
         let largeSizes = fleetSizes.filter { $0 >= 3 }
         let smallSizes = fleetSizes.filter { $0 < 3 }
@@ -77,28 +80,28 @@ public struct RandomPlacement: AIPlacementStrategy, Sendable {
 
         // Place one large ship in first half
         if let firstLargeSize = largeSizes.first {
-            if let ship = placeInHalf(size: firstLargeSize, half: .first, split: split, existingShips: placedShips) {
+            if let ship = placeInHalf(size: firstLargeSize, half: .first, split: split, existingShips: placedShips, boardSize: boardSize) {
                 placedShips.append(ship)
             }
         }
 
         // Place one large ship in second half
         if largeSizes.count > 1 {
-            if let ship = placeInHalf(size: largeSizes[1], half: .second, split: split, existingShips: placedShips) {
+            if let ship = placeInHalf(size: largeSizes[1], half: .second, split: split, existingShips: placedShips, boardSize: boardSize) {
                 placedShips.append(ship)
             }
         }
 
         // Place remaining large ships randomly
         for size in largeSizes.dropFirst(2) {
-            if let ship = findAnyValidPlacement(size: size, existingShips: placedShips) {
+            if let ship = findAnyValidPlacement(size: size, existingShips: placedShips, boardSize: boardSize) {
                 placedShips.append(ship)
             }
         }
 
         // Place small ships randomly
         for size in smallSizes {
-            if let ship = findAnyValidPlacement(size: size, existingShips: placedShips) {
+            if let ship = findAnyValidPlacement(size: size, existingShips: placedShips, boardSize: boardSize) {
                 placedShips.append(ship)
             }
         }
@@ -111,18 +114,19 @@ public struct RandomPlacement: AIPlacementStrategy, Sendable {
         case second
     }
 
-    private func placeInHalf(size: Int, half: BoardHalf, split: BoardSplit, existingShips: [Ship]) -> Ship? {
+    private func placeInHalf(size: Int, half: BoardHalf, split: BoardSplit, existingShips: [Ship], boardSize: Int) -> Ship? {
         let validPlacements = PlacementValidator.validPlacements(
             forShipOfSize: size,
-            existingShips: existingShips
+            existingShips: existingShips,
+            boardSize: boardSize
         )
 
         let filtered = validPlacements.filter { ship in
             switch half {
             case .first:
-                return ship.coordinates.contains { split.isInFirstHalf($0) }
+                return ship.coordinates.contains { split.isInFirstHalf($0, boardSize: boardSize) }
             case .second:
-                return ship.coordinates.contains { split.isInSecondHalf($0) }
+                return ship.coordinates.contains { split.isInSecondHalf($0, boardSize: boardSize) }
             }
         }
 

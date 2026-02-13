@@ -181,7 +181,7 @@ struct MatchPlayView: View {
             action = .rowScan(row: target.row)
         }
 
-        return Set(action.affectedCoordinates)
+        return Set(action.affectedCoordinates(boardSize: viewModel.currentBoardSize))
     }
 }
 

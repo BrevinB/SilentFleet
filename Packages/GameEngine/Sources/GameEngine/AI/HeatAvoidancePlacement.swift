@@ -9,13 +9,14 @@ public struct HeatAvoidancePlacement: AIPlacementStrategy, Sendable {
     public func generatePlacement(
         for fleetSizes: [Int],
         mode: GameMode,
-        splitOrientation: BoardSplit?
+        splitOrientation: BoardSplit?,
+        boardSize: Int
     ) -> [Ship] {
         let sortedSizes = fleetSizes.sorted(by: >)
         var placedShips: [Ship] = []
 
         // Generate heat map (common attack patterns)
-        let heatMap = generateAttackHeatMap()
+        let heatMap = generateAttackHeatMap(boardSize: boardSize)
 
         for size in sortedSizes {
             // Get all valid placements
@@ -23,7 +24,8 @@ public struct HeatAvoidancePlacement: AIPlacementStrategy, Sendable {
                 forShipOfSize: size,
                 existingShips: placedShips,
                 mode: mode,
-                splitOrientation: splitOrientation
+                splitOrientation: splitOrientation,
+                boardSize: boardSize
             )
 
             guard !validPlacements.isEmpty else { continue }
@@ -48,9 +50,10 @@ public struct HeatAvoidancePlacement: AIPlacementStrategy, Sendable {
 
         // Validate ranked constraints
         if mode == .ranked, let split = splitOrientation {
-            if case .failure = PlacementValidator.validate(ships: placedShips, mode: mode, splitOrientation: split) {
+            let gridSize = GridSize.allCases.first { $0.boardSize == boardSize } ?? .large
+            if case .failure = PlacementValidator.validate(ships: placedShips, mode: mode, splitOrientation: split, gridSize: gridSize) {
                 // Fallback to random placement with constraints
-                return RandomPlacement().generatePlacement(for: fleetSizes, mode: mode, splitOrientation: split)
+                return RandomPlacement().generatePlacement(for: fleetSizes, mode: mode, splitOrientation: split, boardSize: boardSize)
             }
         }
 
@@ -58,22 +61,22 @@ public struct HeatAvoidancePlacement: AIPlacementStrategy, Sendable {
     }
 
     /// Generate a heat map based on common human attack patterns
-    private func generateAttackHeatMap() -> [[Double]] {
-        var heatMap = Array(repeating: Array(repeating: 0.0, count: Board.size), count: Board.size)
+    private func generateAttackHeatMap(boardSize: Int) -> [[Double]] {
+        var heatMap = Array(repeating: Array(repeating: 0.0, count: boardSize), count: boardSize)
 
         // Pattern 1: Center is often attacked first (probability-based hunting)
-        let centerRow = Board.size / 2
-        let centerCol = Board.size / 2
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
+        let centerRow = boardSize / 2
+        let centerCol = boardSize / 2
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
                 let distFromCenter = abs(row - centerRow) + abs(col - centerCol)
-                heatMap[row][col] += Double(max(0, 10 - distFromCenter)) * 0.5
+                heatMap[row][col] += Double(max(0, boardSize - distFromCenter)) * 0.5
             }
         }
 
         // Pattern 2: Checkerboard pattern (parity hunting)
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
                 if (row + col) % 2 == 0 {
                     heatMap[row][col] += 3.0
                 }
@@ -81,9 +84,9 @@ public struct HeatAvoidancePlacement: AIPlacementStrategy, Sendable {
         }
 
         // Pattern 3: Edges are attacked less frequently
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
-                if row == 0 || row == Board.size - 1 || col == 0 || col == Board.size - 1 {
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
+                if row == 0 || row == boardSize - 1 || col == 0 || col == boardSize - 1 {
                     heatMap[row][col] -= 2.0
                 }
             }
@@ -91,8 +94,8 @@ public struct HeatAvoidancePlacement: AIPlacementStrategy, Sendable {
 
         // Pattern 4: Corners rarely attacked early
         let corners = [
-            (0, 0), (0, Board.size - 1),
-            (Board.size - 1, 0), (Board.size - 1, Board.size - 1)
+            (0, 0), (0, boardSize - 1),
+            (boardSize - 1, 0), (boardSize - 1, boardSize - 1)
         ]
         for (row, col) in corners {
             heatMap[row][col] -= 3.0
@@ -104,8 +107,9 @@ public struct HeatAvoidancePlacement: AIPlacementStrategy, Sendable {
     /// Calculate the total heat score for a ship placement
     private func calculateHeatScore(for ship: Ship, heatMap: [[Double]]) -> Double {
         var total = 0.0
+        let boardSize = heatMap.count
         for coord in ship.coordinates {
-            if coord.isValid {
+            if coord.isValid(forBoardSize: boardSize) {
                 total += heatMap[coord.row][coord.col]
             }
         }

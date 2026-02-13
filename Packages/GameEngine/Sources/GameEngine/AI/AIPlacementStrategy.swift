@@ -7,12 +7,25 @@ public protocol AIPlacementStrategy: Sendable {
     ///   - fleetSizes: Sizes of ships to place (e.g., [5,4,3,3,2,2,1,1,1])
     ///   - mode: Game mode (affects ranked constraints)
     ///   - splitOrientation: For ranked mode, the board split orientation
+    ///   - boardSize: Size of the board (defaults to 10)
     /// - Returns: Array of placed ships
     func generatePlacement(
         for fleetSizes: [Int],
         mode: GameMode,
-        splitOrientation: BoardSplit?
+        splitOrientation: BoardSplit?,
+        boardSize: Int
     ) -> [Ship]
+}
+
+extension AIPlacementStrategy {
+    /// Convenience method with default board size
+    public func generatePlacement(
+        for fleetSizes: [Int],
+        mode: GameMode,
+        splitOrientation: BoardSplit?
+    ) -> [Ship] {
+        generatePlacement(for: fleetSizes, mode: mode, splitOrientation: splitOrientation, boardSize: Board.size)
+    }
 }
 
 /// Factory for creating AI placement strategies

@@ -57,7 +57,8 @@ struct MatchSummaryView: View {
                         viewModel.startNewGame(
                             mode: viewModel.gameMode,
                             difficulty: viewModel.aiDifficulty,
-                            split: viewModel.boardSplit
+                            split: viewModel.boardSplit,
+                            gridSize: viewModel.gridSize
                         )
                     } label: {
                         Text("Play Again")

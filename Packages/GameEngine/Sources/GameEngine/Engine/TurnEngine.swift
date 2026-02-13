@@ -32,7 +32,8 @@ public struct TurnEngine: Sendable {
         }
 
         // Validate shot coordinate
-        guard action.shot.isValid else {
+        let boardSize = state.boardDimension
+        guard action.shot.isValid(forBoardSize: boardSize) else {
             return .failure(.invalidCoordinate(action.shot))
         }
 
@@ -52,6 +53,7 @@ public struct TurnEngine: Sendable {
         playerIndex: Int
     ) -> TurnError? {
         let player = state.player(at: playerIndex)
+        let boardSize = state.boardDimension
 
         // Check ranked first turn restriction
         if state.isFirstPlayerFirstTurn && playerIndex == state.firstPlayerIndex {
@@ -67,11 +69,11 @@ public struct TurnEngine: Sendable {
         // Validate power-up parameters
         switch action {
         case .sonarPing(let center):
-            if !center.isValid {
+            if !center.isValid(forBoardSize: boardSize) {
                 return .invalidCoordinate(center)
             }
         case .rowScan(let row):
-            if row < 0 || row >= Board.size {
+            if row < 0 || row >= boardSize {
                 return .invalidRow(row)
             }
         }
@@ -140,6 +142,8 @@ public struct TurnEngine: Sendable {
         state: inout GameState,
         playerIndex: Int
     ) -> PowerUpResult {
+        let boardSize = state.boardDimension
+
         // Consume the power-up from player's kit
         var player = state.player(at: playerIndex)
         player.powerUpKit.consume(action.type)
@@ -150,7 +154,7 @@ public struct TurnEngine: Sendable {
         let opponent = state.player(at: opponentIndex)
 
         // Check for ship presence in affected area
-        let affectedCoords = action.affectedCoordinates
+        let affectedCoords = action.affectedCoordinates(boardSize: boardSize)
         let detected = opponent.board.hasShipInAny(of: affectedCoords)
 
         // For sonar, find actual ship coordinates (for visual pulse)
@@ -213,12 +217,13 @@ public struct TurnEngine: Sendable {
 
     /// Get all valid shot coordinates for the current player
     public static func validShotCoordinates(in state: GameState) -> [Coordinate] {
+        let boardSize = state.boardDimension
         let opponentIndex = 1 - state.currentPlayerIndex
         let opponent = state.player(at: opponentIndex)
 
         var valid: [Coordinate] = []
-        for row in 0..<Board.size {
-            for col in 0..<Board.size {
+        for row in 0..<boardSize {
+            for col in 0..<boardSize {
                 let coord = Coordinate(row: row, col: col)
                 if !opponent.board.hasBeenShot(at: coord) {
                     valid.append(coord)

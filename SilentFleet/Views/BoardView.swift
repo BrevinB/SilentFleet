@@ -18,8 +18,15 @@ struct BoardView: View {
     @ObservedObject private var inventory = PlayerInventory.shared
     @State private var hoverCoordinate: Coordinate?
 
-    private let gridSize = Board.size
-    private let cellSize: CGFloat = 32
+    private var gridSize: Int { board.boardSize }
+    /// Cell size scales based on grid dimension so the board fits on screen
+    private var cellSize: CGFloat {
+        switch gridSize {
+        case 1...6: return 42
+        case 7...8: return 36
+        default: return 32
+        }
+    }
     private let spacing: CGFloat = 2
 
     private var theme: BoardTheme { inventory.equippedTheme }
@@ -122,8 +129,8 @@ struct BoardView: View {
             origin: coord,
             orientation: placementOrientation
         )
-        if case .success = PlacementValidator.canPlace(ship: testShip, on: board.ships) {
-            return testShip.isWithinBounds
+        if case .success = PlacementValidator.canPlace(ship: testShip, on: board.ships, boardSize: board.boardSize) {
+            return testShip.isWithinBounds(boardSize: board.boardSize)
         }
         return false
     }
