@@ -89,7 +89,7 @@ public struct GameState: Codable, Equatable, Sendable, Identifiable {
         rankedSplitOrientation: BoardSplit? = nil
     ) -> GameState {
         let boardSize = gridSize.boardSize
-        GameState(
+        return GameState(
             mode: mode,
             aiDifficulty: aiDifficulty,
             gridSize: gridSize,
