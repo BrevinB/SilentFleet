@@ -9,6 +9,7 @@ struct MainMenuView: View {
     @State private var showingSettings = false
     @State private var showingHowToPlay = false
     @State private var showingShop = false
+    @State private var showingStats = false
     @State private var titleOffset: CGFloat = -50
     @State private var buttonsOpacity: Double = 0
     @State private var savedGames: [GameState] = []
@@ -131,6 +132,15 @@ struct MainMenuView: View {
                         ) {
                             showingHowToPlay = true
                         }
+
+                        MenuButton(
+                            title: "Stats",
+                            subtitle: "Career stats & achievements",
+                            icon: "chart.bar.fill",
+                            color: .purple
+                        ) {
+                            showingStats = true
+                        }
                     }
                     .padding(.horizontal, 24)
                     .opacity(buttonsOpacity)
@@ -167,6 +177,9 @@ struct MainMenuView: View {
             }
             .sheet(isPresented: $showingShop) {
                 ShopView()
+            }
+            .sheet(isPresented: $showingStats) {
+                PlayerStatsView()
             }
             .task {
                 await loadSavedGames()

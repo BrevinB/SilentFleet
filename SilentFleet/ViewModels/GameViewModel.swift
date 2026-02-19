@@ -25,6 +25,7 @@ final class GameViewModel: ObservableObject {
     @Published var showingAIResult: Bool = false
     @Published var showingPlayerBoardForAI: Bool = false  // Switch to player board before AI fires
     @Published var coinReward: CoinReward?
+    @Published var newlyUnlockedAchievements: [Achievement] = []
 
     // MARK: - Configuration
 
@@ -126,6 +127,7 @@ final class GameViewModel: ObservableObject {
         isAIThinking = false
         showingAIResult = false
         coinReward = nil
+        newlyUnlockedAchievements = []
     }
 
     // MARK: - Ship Placement
@@ -416,8 +418,7 @@ final class GameViewModel: ObservableObject {
 
             // Check for game end
             if state.isGameOver {
-                triggerGameEndHaptic()
-                coinReward = CoinManager.awardCoins(for: state)
+                handleGameEnd(state: state)
             }
 
             // If game not over and it's AI's turn, execute AI turn after delay
@@ -502,8 +503,7 @@ final class GameViewModel: ObservableObject {
 
             // Check for game end
             if state.isGameOver {
-                triggerGameEndHaptic()
-                coinReward = CoinManager.awardCoins(for: state)
+                handleGameEnd(state: state)
             }
 
             // Auto-dismiss AI result after giving player time to see it
@@ -513,6 +513,20 @@ final class GameViewModel: ObservableObject {
                 showingPlayerBoardForAI = false  // Switch back to enemy board
             }
         }
+    }
+
+    // MARK: - Game End
+
+    private func handleGameEnd(state: GameState) {
+        triggerGameEndHaptic()
+
+        // Record stats first (this updates streak before we read it)
+        let unlocked = PlayerStats.shared.recordGame(state)
+        newlyUnlockedAchievements = unlocked
+
+        // Award coins with streak and difficulty bonuses
+        let streak = PlayerStats.shared.currentWinStreak
+        coinReward = CoinManager.awardCoins(for: state, streak: streak)
     }
 
     // MARK: - Save/Load
