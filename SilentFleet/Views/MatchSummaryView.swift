@@ -18,82 +18,92 @@ struct MatchSummaryView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 32) {
-                Spacer()
+            ScrollView {
+                VStack(spacing: 24) {
+                    Spacer().frame(height: 20)
 
-                // Result
-                VStack(spacing: 16) {
-                    Image(systemName: isVictory ? "trophy.fill" : "flag.fill")
-                        .font(.system(size: 80))
-                        .foregroundStyle(isVictory ? .yellow : .red)
-                        .shadow(color: isVictory ? .yellow.opacity(0.5) : .red.opacity(0.5), radius: 20)
+                    // Result
+                    VStack(spacing: 16) {
+                        Image(systemName: isVictory ? "trophy.fill" : "flag.fill")
+                            .font(.system(size: 80))
+                            .foregroundStyle(isVictory ? .yellow : .red)
+                            .shadow(color: isVictory ? .yellow.opacity(0.5) : .red.opacity(0.5), radius: 20)
 
-                    Text(viewModel.winner ?? "Game Over")
-                        .font(.largeTitle.weight(.black))
-                        .foregroundStyle(.white)
-
-                    Text(isVictory ? "Congratulations!" : "Better luck next time")
-                        .font(.title3)
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-
-                // Stats
-                if let state = viewModel.gameState {
-                    StatsView(state: state)
-                }
-
-                // Coin reward
-                if let reward = viewModel.coinReward {
-                    CoinRewardView(reward: reward)
-                }
-
-                Spacer()
-
-                // Actions
-                VStack(spacing: 12) {
-                    Button {
-                        HapticManager.shared.buttonTap()
-                        SoundManager.shared.buttonTap()
-                        viewModel.startNewGame(
-                            mode: viewModel.gameMode,
-                            difficulty: viewModel.aiDifficulty,
-                            split: viewModel.boardSplit,
-                            gridSize: viewModel.gridSize
-                        )
-                    } label: {
-                        Text("Play Again")
-                            .font(.headline)
+                        Text(viewModel.winner ?? "Game Over")
+                            .font(.largeTitle.weight(.black))
                             .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.cyan)
-                            )
+
+                        Text(isVictory ? "Congratulations!" : "Better luck next time")
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.7))
                     }
 
-                    Button {
-                        HapticManager.shared.buttonTap()
-                        SoundManager.shared.buttonTap()
-                        onDismiss()
-                    } label: {
-                        Text("Main Menu")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.white.opacity(0.15))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(.white.opacity(0.3), lineWidth: 1)
-                                    )
-                            )
+                    // Streak indicator
+                    if isVictory {
+                        StreakBadgeView(streak: PlayerStats.shared.currentWinStreak)
                     }
+
+                    // Stats
+                    if let state = viewModel.gameState {
+                        StatsView(state: state)
+                    }
+
+                    // Coin reward
+                    if let reward = viewModel.coinReward {
+                        CoinRewardView(reward: reward)
+                    }
+
+                    // Newly unlocked achievements
+                    if !viewModel.newlyUnlockedAchievements.isEmpty {
+                        AchievementUnlockView(achievements: viewModel.newlyUnlockedAchievements)
+                    }
+
+                    // Actions
+                    VStack(spacing: 12) {
+                        Button {
+                            HapticManager.shared.buttonTap()
+                            SoundManager.shared.buttonTap()
+                            viewModel.startNewGame(
+                                mode: viewModel.gameMode,
+                                difficulty: viewModel.aiDifficulty,
+                                split: viewModel.boardSplit,
+                                gridSize: viewModel.gridSize
+                            )
+                        } label: {
+                            Text("Play Again")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(.cyan)
+                                )
+                        }
+
+                        Button {
+                            HapticManager.shared.buttonTap()
+                            SoundManager.shared.buttonTap()
+                            onDismiss()
+                        } label: {
+                            Text("Main Menu")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(.white.opacity(0.15))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(.white.opacity(0.3), lineWidth: 1)
+                                        )
+                                )
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 32)
                 }
-                .padding(.horizontal, 32)
-                .padding(.bottom, 32)
             }
         }
     }
@@ -101,6 +111,95 @@ struct MatchSummaryView: View {
     private var isVictory: Bool {
         guard let state = viewModel.gameState else { return false }
         return state.winner == state.player1.id
+    }
+}
+
+// MARK: - Streak Badge
+
+struct StreakBadgeView: View {
+    let streak: Int
+
+    var body: some View {
+        if streak >= 2 {
+            HStack(spacing: 6) {
+                Image(systemName: "flame.fill")
+                    .foregroundStyle(.orange)
+                Text("\(streak) Win Streak!")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.orange)
+                Text("+\(CoinManager.streakBonus(for: streak)) bonus")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.yellow)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(.orange.opacity(0.15))
+                    .overlay(
+                        Capsule()
+                            .stroke(.orange.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+    }
+}
+
+// MARK: - Achievement Unlock Banner
+
+struct AchievementUnlockView: View {
+    let achievements: [Achievement]
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Image(systemName: "star.fill")
+                    .foregroundStyle(.yellow)
+                Text("Achievement\(achievements.count > 1 ? "s" : "") Unlocked!")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+            }
+
+            ForEach(achievements) { achievement in
+                HStack(spacing: 12) {
+                    Image(systemName: achievement.icon)
+                        .font(.title3)
+                        .foregroundStyle(.cyan)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(.cyan.opacity(0.15)))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(achievement.title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                        Text(achievement.description)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+
+                    Spacer()
+
+                    HStack(spacing: 3) {
+                        Image(systemName: "dollarsign.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.yellow)
+                        Text("+\(achievement.coinReward)")
+                            .font(.caption.weight(.bold).monospacedDigit())
+                            .foregroundStyle(.yellow)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.cyan.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(.cyan.opacity(0.25), lineWidth: 1)
+                )
+        )
+        .padding(.horizontal)
     }
 }
 
@@ -211,6 +310,12 @@ struct CoinRewardView: View {
                     rewardRow(label: "Ships Sunk", amount: reward.sinkBonus)
                 }
                 rewardRow(label: "Completion", amount: reward.completionBonus)
+                if reward.streakBonus > 0 {
+                    rewardRow(label: "Streak Bonus", amount: reward.streakBonus, color: .orange)
+                }
+                if reward.difficultyBonus > 0 {
+                    rewardRow(label: "Difficulty Bonus", amount: reward.difficultyBonus, color: .cyan)
+                }
 
                 Divider().overlay(.white.opacity(0.2))
 
@@ -237,7 +342,7 @@ struct CoinRewardView: View {
         .padding(.horizontal)
     }
 
-    private func rewardRow(label: String, amount: Int) -> some View {
+    private func rewardRow(label: String, amount: Int, color: Color = .yellow) -> some View {
         HStack {
             Text(label)
                 .font(.subheadline)
@@ -245,7 +350,7 @@ struct CoinRewardView: View {
             Spacer()
             Text("+\(amount)")
                 .font(.subheadline.weight(.semibold).monospacedDigit())
-                .foregroundStyle(.yellow)
+                .foregroundStyle(color)
         }
     }
 }
