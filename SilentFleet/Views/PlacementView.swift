@@ -9,8 +9,8 @@ struct BoardFrameKey: PreferenceKey {
     }
 }
 
-struct PlacementView: View {
-    @ObservedObject var viewModel: GameViewModel
+struct PlacementView<Host: PlacementHost>: View {
+    @ObservedObject var viewModel: Host
     @ObservedObject private var inventory = PlayerInventory.shared
     @State private var hoverCoordinate: Coordinate?
     @State private var isDragging: Bool = false
@@ -125,6 +125,7 @@ struct PlacementView: View {
                     Text("Place Your Fleet")
                         .font(.title2.weight(.bold))
                         .foregroundStyle(.white)
+                        .accessibilityAddTraits(.isHeader)
 
                     if isDraggingFromSelection {
                         Text("Drag onto the board...")
@@ -318,6 +319,7 @@ struct PlacementView: View {
                     } label: {
                         HStack {
                             Image(systemName: "arrow.triangle.2.circlepath")
+                                .accessibilityHidden(true)
                             Text(viewModel.placementOrientation == .horizontal ? "Horizontal" : "Vertical")
                         }
                         .font(.subheadline)
@@ -330,6 +332,8 @@ struct PlacementView: View {
                                 .overlay(Capsule().stroke(.white.opacity(0.3), lineWidth: 1))
                         )
                     }
+                    .accessibilityLabel("Orientation: \(viewModel.placementOrientation == .horizontal ? "horizontal" : "vertical")")
+                    .accessibilityHint("Toggles between horizontal and vertical ship placement.")
 
                     // Auto-populate Button
                     Button {
@@ -344,6 +348,7 @@ struct PlacementView: View {
                     } label: {
                         HStack {
                             Image(systemName: "shuffle")
+                                .accessibilityHidden(true)
                             Text("Randomize")
                         }
                         .font(.subheadline)
@@ -356,17 +361,19 @@ struct PlacementView: View {
                                 .overlay(Capsule().stroke(.orange.opacity(0.5), lineWidth: 1))
                         )
                     }
+                    .accessibilityHint("Auto-places your entire fleet in random valid positions.")
                 }
 
                 Spacer()
 
                 // Continue Button
                 Button {
-                    _ = viewModel.confirmPlacement()
+                    Task { _ = await viewModel.commitPlacement() }
                 } label: {
                     HStack {
                         Text("Continue")
                         Image(systemName: "arrow.right")
+                            .accessibilityHidden(true)
                     }
                     .font(.headline)
                     .foregroundStyle(.white)
@@ -378,6 +385,9 @@ struct PlacementView: View {
                     )
                 }
                 .disabled(!viewModel.remainingFleetSizes.isEmpty)
+                .accessibilityHint(viewModel.remainingFleetSizes.isEmpty
+                                   ? "Confirms your placement and starts the match."
+                                   : "Disabled until all ships are placed.")
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
@@ -447,8 +457,8 @@ struct DraggingShipView: View {
     }
 }
 
-struct ShipSelectionView: View {
-    @ObservedObject var viewModel: GameViewModel
+struct ShipSelectionView<Host: PlacementHost>: View {
+    @ObservedObject var viewModel: Host
     var onTap: (Int) -> Void
     var onDragStarted: (Int, CGPoint) -> Void
     var onDragChanged: (Int, CGPoint) -> Void
@@ -811,7 +821,7 @@ struct PlacementCellView: View {
 
 #Preview {
     NavigationStack {
-        PlacementView(viewModel: {
+        PlacementView<GameViewModel>(viewModel: {
             let vm = GameViewModel()
             vm.startNewGame(mode: .casual, difficulty: .easy)
             return vm

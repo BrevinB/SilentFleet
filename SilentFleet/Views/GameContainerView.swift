@@ -23,10 +23,7 @@ struct GameContainerView: View {
                 Button {
                     dismiss()
                 } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text("Menu")
-                    }
+                    Label("Menu", systemImage: "chevron.left")
                 }
             }
         }

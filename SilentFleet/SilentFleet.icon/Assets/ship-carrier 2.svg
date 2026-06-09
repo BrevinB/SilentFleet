@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <g fill="#FFFFFF">
+    <!-- Hull -->
+    <path d="M230 620 L794 620 L750 700 L274 700 Z"/>
+    <!-- Flight deck -->
+    <rect x="220" y="560" width="584" height="60"/>
+    <!-- Island (offset right) -->
+    <rect x="600" y="460" width="70" height="100"/>
+    <rect x="612" y="420" width="46" height="40"/>
+    <!-- Mast -->
+    <rect x="628" y="340" width="14" height="80"/>
+  </g>
+</svg>

@@ -28,15 +28,18 @@ struct MatchSummaryView: View {
                             .font(.system(size: 80))
                             .foregroundStyle(isVictory ? .yellow : .red)
                             .shadow(color: isVictory ? .yellow.opacity(0.5) : .red.opacity(0.5), radius: 20)
+                            .accessibilityHidden(true)
 
                         Text(viewModel.winner ?? "Game Over")
                             .font(.largeTitle.weight(.black))
                             .foregroundStyle(.white)
+                            .accessibilityAddTraits(.isHeader)
 
                         Text(isVictory ? "Congratulations!" : "Better luck next time")
                             .font(.title3)
                             .foregroundStyle(.white.opacity(0.7))
                     }
+                    .accessibilityElement(children: .combine)
 
                     // Streak indicator
                     if isVictory {
@@ -124,6 +127,7 @@ struct StreakBadgeView: View {
             HStack(spacing: 6) {
                 Image(systemName: "flame.fill")
                     .foregroundStyle(.orange)
+                    .accessibilityHidden(true)
                 Text("\(streak) Win Streak!")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(.orange)
@@ -141,6 +145,7 @@ struct StreakBadgeView: View {
                             .stroke(.orange.opacity(0.3), lineWidth: 1)
                     )
             )
+            .accessibilityElement(children: .combine)
         }
     }
 }
@@ -167,6 +172,7 @@ struct AchievementUnlockView: View {
                         .foregroundStyle(.cyan)
                         .frame(width: 36, height: 36)
                         .background(Circle().fill(.cyan.opacity(0.15)))
+                        .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(achievement.title)
@@ -183,11 +189,14 @@ struct AchievementUnlockView: View {
                         Image(systemName: "dollarsign.circle.fill")
                             .font(.caption)
                             .foregroundStyle(.yellow)
+                            .accessibilityHidden(true)
                         Text("+\(achievement.coinReward)")
                             .font(.caption.weight(.bold).monospacedDigit())
                             .foregroundStyle(.yellow)
                     }
+                    .accessibilityLabel("plus \(achievement.coinReward) coins")
                 }
+                .accessibilityElement(children: .combine)
             }
         }
         .padding()

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Concentric splash rings -->
+  <g fill="none" stroke="#9FE7F0">
+    <ellipse cx="512" cy="560" rx="220" ry="56" stroke-width="10" stroke-opacity="0.95"/>
+    <ellipse cx="512" cy="560" rx="160" ry="40" stroke-width="8" stroke-opacity="0.75"/>
+    <ellipse cx="512" cy="560" rx="100" ry="24" stroke-width="6" stroke-opacity="0.55"/>
+  </g>
+  <!-- Vertical splash droplets -->
+  <g fill="#9FE7F0">
+    <ellipse cx="430" cy="470" rx="10" ry="22"/>
+    <ellipse cx="512" cy="440" rx="12" ry="28"/>
+    <ellipse cx="594" cy="470" rx="10" ry="22"/>
+    <ellipse cx="476" cy="408" rx="8" ry="16"/>
+    <ellipse cx="548" cy="408" rx="8" ry="16"/>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <g fill="#FFFFFF">
+    <!-- Hull (sleeker than battleship) -->
+    <path d="M320 620 L704 620 L672 680 L352 680 Z"/>
+    <!-- Forward gun -->
+    <rect x="370" y="590" width="60" height="30"/>
+    <!-- Bridge -->
+    <rect x="450" y="500" width="80" height="120"/>
+    <!-- Funnel -->
+    <rect x="558" y="540" width="50" height="80"/>
+    <!-- Mast -->
+    <rect x="478" y="380" width="20" height="120"/>
+    <rect x="466" y="372" width="44" height="10"/>
+  </g>
+</svg>

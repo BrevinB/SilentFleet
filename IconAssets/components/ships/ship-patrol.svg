@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <g fill="#FFFFFF">
+    <!-- Small hull -->
+    <path d="M380 600 L644 600 L616 660 L408 660 Z"/>
+    <!-- Cabin -->
+    <rect x="440" y="520" width="120" height="80"/>
+    <!-- Small mast -->
+    <rect x="494" y="440" width="12" height="80"/>
+    <rect x="484" y="432" width="32" height="10"/>
+  </g>
+</svg>

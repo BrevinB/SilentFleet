@@ -33,10 +33,13 @@ struct MatchPlayView: View {
                     HStack {
                         Image(systemName: effectiveShowingPlayerBoard ? "shield.fill" : "scope")
                             .foregroundStyle(effectiveShowingPlayerBoard ? .cyan : .orange)
+                            .accessibilityHidden(true)
                         Text(effectiveShowingPlayerBoard ? "Your Fleet" : "Enemy Waters")
                             .font(.headline)
                             .foregroundStyle(.white)
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isHeader)
                     .animation(.easeInOut(duration: 0.2), value: effectiveShowingPlayerBoard)
 
                 if effectiveShowingPlayerBoard {
@@ -93,6 +96,7 @@ struct MatchPlayView: View {
                 } label: {
                     HStack {
                         Image(systemName: showingPlayerBoard ? "scope" : "shield")
+                            .accessibilityHidden(true)
                         Text(showingPlayerBoard ? "View Enemy" : "View Fleet")
                     }
                     .font(.subheadline)
@@ -107,6 +111,7 @@ struct MatchPlayView: View {
                 }
                 .disabled(viewModel.showingAIResult || viewModel.showingPlayerBoardForAI)
                 .opacity(viewModel.showingAIResult || viewModel.showingPlayerBoardForAI ? 0.5 : 1)
+                .accessibilityHint("Switches between viewing your own fleet and the enemy's waters.")
 
                 // Power-up Bar
                 if viewModel.isPlayerTurn && !effectiveShowingPlayerBoard {
@@ -139,7 +144,8 @@ struct MatchPlayView: View {
 
                 Spacer()
             }
-            .padding()
+            .padding(.vertical)
+            .padding(.horizontal, 24)
         }
         .sheet(isPresented: $viewModel.showingPowerUpResult) {
             if let result = viewModel.lastPowerUpResult {
@@ -205,24 +211,24 @@ struct StatusHeaderView: View {
                 )
 
             // Fleet status
-            HStack(spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
                 // Player fleet
                 FleetStatusView(
                     title: "Your Fleet",
                     board: viewModel.playerBoard,
                     alignment: .leading
                 )
-
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 // Enemy fleet
                 FleetStatusView(
                     title: "Enemy Fleet",
                     board: viewModel.opponentBoard,
-                    alignment: .trailing
+                    alignment: .trailing,
+                    hideShipSizes: viewModel.gameMode == .ranked
                 )
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .padding(.horizontal)
         }
     }
 }
@@ -232,6 +238,7 @@ struct FleetStatusView: View {
     let title: String
     let board: Board?
     let alignment: HorizontalAlignment
+    var hideShipSizes: Bool = false
 
     var body: some View {
         VStack(alignment: alignment, spacing: 4) {
@@ -242,9 +249,14 @@ struct FleetStatusView: View {
             if let board = board {
                 // Ship indicators - grouped by size for cleaner display
                 let statuses = board.shipStatuses
-                HStack(spacing: 3) {
+                HStack(spacing: 2) {
                     ForEach(Array(statuses.enumerated()), id: \.offset) { _, status in
-                        ShipIndicator(size: status.size, isSunk: status.isSunk)
+                        // In ranked mode, render anonymized (uniform-width) indicators
+                        // for the enemy so neither the live size nor the sunk size leaks.
+                        ShipIndicator(
+                            size: hideShipSizes ? 2 : status.size,
+                            isSunk: status.isSunk
+                        )
                     }
                 }
             }
@@ -261,9 +273,9 @@ struct ShipIndicator: View {
     var body: some View {
         HStack(spacing: 1) {
             ForEach(0..<size, id: \.self) { _ in
-                RoundedRectangle(cornerRadius: 2)
+                RoundedRectangle(cornerRadius: 1.5)
                     .fill(isSunk ? skin.indicatorSunk : skin.indicatorHealthy)
-                    .frame(width: 6, height: 12)
+                    .frame(width: 4, height: 10)
             }
         }
         .padding(2)
@@ -438,6 +450,7 @@ struct PowerUpBarView: View {
                             Image(systemName: type == .sonarPing ? "dot.radiowaves.left.and.right" : "line.horizontal.3")
                                 .font(.title2)
                                 .foregroundStyle(isSelected ? .cyan : .white)
+                                .accessibilityHidden(true)
 
                             Text(type == .sonarPing ? "Sonar" : "Row Scan")
                                 .font(.caption2.weight(.medium))
@@ -466,6 +479,13 @@ struct PowerUpBarView: View {
                     }
                     .disabled(!isAvailable)
                     .opacity(isAvailable ? 1 : 0.4)
+                    .accessibilityLabel(
+                        "\(type == .sonarPing ? "Sonar Ping" : "Row Scan"), \(countText(for: type))"
+                        + (isSelected ? ", selected" : "")
+                    )
+                    .accessibilityHint(type == .sonarPing
+                                       ? "Detects ships in a 3 by 3 area."
+                                       : "Detects ships in a whole row.")
                 }
 
                 // Cancel button when power-up selected
@@ -477,11 +497,13 @@ struct PowerUpBarView: View {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(.red)
+                                .accessibilityHidden(true)
                             Text("Cancel")
                                 .font(.caption2)
                                 .foregroundStyle(.red)
                         }
                     }
+                    .accessibilityLabel("Cancel power-up")
                 }
             }
         }
@@ -577,14 +599,31 @@ struct AIThinkingOverlay: View {
                 }
             }
             .padding(32)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(.ultraThinMaterial)
-            )
+            .background(AdaptiveMaterialBackground(cornerRadius: 20))
         }
         .onReceive(timer) { _ in
             dotCount = (dotCount + 1) % 3
         }
+    }
+}
+
+/// Translucent background that switches to a solid fill when the user has
+/// Reduce Transparency enabled in Accessibility settings.
+struct AdaptiveMaterialBackground: View {
+    var cornerRadius: CGFloat = 16
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    var body: some View {
+        Group {
+            if reduceTransparency {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color.black.opacity(0.85))
+            } else {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(.ultraThinMaterial)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 

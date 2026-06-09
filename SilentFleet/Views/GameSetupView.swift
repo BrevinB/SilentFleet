@@ -421,11 +421,7 @@ struct GameSetupView: View {
             }
         }
         .padding(24)
-        .background(
-            Rectangle()
-                .fill(.ultraThinMaterial.opacity(0.5))
-                .ignoresSafeArea()
-        )
+        .background(BottomBarBackground())
     }
 
     // MARK: - Navigation
@@ -892,6 +888,22 @@ struct PowerUpInfo: View {
                 .font(.headline)
                 .foregroundStyle(.white)
         }
+    }
+}
+
+private struct BottomBarBackground: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    var body: some View {
+        Group {
+            if reduceTransparency {
+                Rectangle().fill(Color.black.opacity(0.6))
+            } else {
+                Rectangle().fill(.ultraThinMaterial.opacity(0.5))
+            }
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
     }
 }
 

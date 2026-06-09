@@ -10,8 +10,12 @@ struct MainMenuView: View {
     @State private var showingHowToPlay = false
     @State private var showingShop = false
     @State private var showingStats = false
+    @State private var showingOnline = false
+    @State private var showingGameCenter = false
+    @ObservedObject private var gameCenter = GameCenterManager.shared
     @State private var titleOffset: CGFloat = -50
     @State private var buttonsOpacity: Double = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var savedGames: [GameState] = []
     @State private var hasSavedGame = false
 
@@ -45,10 +49,28 @@ struct MainMenuView: View {
                             .padding(.vertical, 10)
                             .background(Capsule().fill(.white.opacity(0.1)))
                         }
+                        .accessibilityLabel("Shop, \(inventory.coinBalance) coins")
                         .padding(.leading, 20)
                         .padding(.top, 8)
 
                         Spacer()
+
+                        if gameCenter.isAuthenticated {
+                            Button {
+                                HapticManager.shared.buttonTap()
+                                SoundManager.shared.buttonTap()
+                                showingGameCenter = true
+                            } label: {
+                                Image(systemName: "gamecontroller.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.white.opacity(0.7))
+                                    .padding(12)
+                                    .background(Circle().fill(.white.opacity(0.1)))
+                            }
+                            .accessibilityLabel("Game Center")
+                            .padding(.trailing, 8)
+                            .padding(.top, 8)
+                        }
 
                         Button {
                             HapticManager.shared.buttonTap()
@@ -61,6 +83,7 @@ struct MainMenuView: View {
                                 .padding(12)
                                 .background(Circle().fill(.white.opacity(0.1)))
                         }
+                        .accessibilityLabel("Settings")
                         .padding(.trailing, 20)
                         .padding(.top, 8)
                     }
@@ -74,9 +97,12 @@ struct MainMenuView: View {
                     // Title with animation
                     VStack(spacing: 8) {
                         Text("SILENT FLEET")
-                            .font(.system(size: 42, weight: .black, design: .rounded))
+                            .font(.system(.largeTitle, design: .rounded).weight(.black))
+                            .minimumScaleFactor(0.7)
+                            .lineLimit(1)
                             .foregroundStyle(.white)
                             .shadow(color: .black.opacity(0.3), radius: 10, y: 5)
+                            .accessibilityAddTraits(.isHeader)
 
                         Text("Naval Warfare")
                             .font(.title3)
@@ -87,11 +113,16 @@ struct MainMenuView: View {
                             .font(.system(size: 30))
                             .foregroundStyle(.white.opacity(0.5))
                             .padding(.top, 8)
+                            .accessibilityHidden(true)
                     }
                     .offset(y: titleOffset)
                     .onAppear {
-                        withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+                        if reduceMotion {
                             titleOffset = 0
+                        } else {
+                            withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+                                titleOffset = 0
+                            }
                         }
                     }
 
@@ -108,6 +139,15 @@ struct MainMenuView: View {
                             withAnimation {
                                 showingGameSetup = true
                             }
+                        }
+
+                        MenuButton(
+                            title: "Online Match",
+                            subtitle: "Turn-based vs another player",
+                            icon: "person.2.fill",
+                            color: .cyan
+                        ) {
+                            showingOnline = true
                         }
 
                         MenuButton(
@@ -145,15 +185,19 @@ struct MainMenuView: View {
                     .padding(.horizontal, 24)
                     .opacity(buttonsOpacity)
                     .onAppear {
-                        withAnimation(.easeOut(duration: 0.6).delay(0.3)) {
+                        if reduceMotion {
                             buttonsOpacity = 1
+                        } else {
+                            withAnimation(.easeOut(duration: 0.6).delay(0.3)) {
+                                buttonsOpacity = 1
+                            }
                         }
                     }
 
                     Spacer()
 
                     // Version
-                    Text("v1.0")
+                    Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.5))
                         .padding(.bottom, 20)
@@ -168,6 +212,9 @@ struct MainMenuView: View {
             .navigationDestination(isPresented: $navigateToGame) {
                 GameContainerView(viewModel: viewModel)
             }
+            .navigationDestination(isPresented: $showingOnline) {
+                OnlineMatchContainerView()
+            }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
                     .environmentObject(SettingsManager.shared)
@@ -180,6 +227,10 @@ struct MainMenuView: View {
             }
             .sheet(isPresented: $showingStats) {
                 PlayerStatsView()
+            }
+            .sheet(isPresented: $showingGameCenter) {
+                GameCenterDashboardView(state: .dashboard)
+                    .ignoresSafeArea()
             }
             .task {
                 await loadSavedGames()
@@ -202,6 +253,7 @@ struct MainMenuView: View {
 
 struct AnimatedOceanBackground: View {
     @ObservedObject private var inventory = PlayerInventory.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var waveOffset: CGFloat = 0
 
     private var theme: BoardTheme { inventory.equippedTheme }
@@ -216,18 +268,22 @@ struct AnimatedOceanBackground: View {
             )
             .ignoresSafeArea()
 
-            // Animated wave layers
-            WaveShape(offset: waveOffset, amplitude: 20)
-                .fill(theme.waveColor.opacity(theme.waveOpacity1))
-                .frame(height: 200)
-                .offset(y: 250)
+            // Animated wave layers (skipped entirely when Reduce Motion is on)
+            if !reduceMotion {
+                WaveShape(offset: waveOffset, amplitude: 20)
+                    .fill(theme.waveColor.opacity(theme.waveOpacity1))
+                    .frame(height: 200)
+                    .offset(y: 250)
 
-            WaveShape(offset: waveOffset + 100, amplitude: 15)
-                .fill(theme.waveColor.opacity(theme.waveOpacity2))
-                .frame(height: 150)
-                .offset(y: 300)
+                WaveShape(offset: waveOffset + 100, amplitude: 15)
+                    .fill(theme.waveColor.opacity(theme.waveOpacity2))
+                    .frame(height: 150)
+                    .offset(y: 300)
+            }
         }
+        .accessibilityHidden(true)
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(.linear(duration: 8).repeatForever(autoreverses: false)) {
                 waveOffset = 360
             }
@@ -293,6 +349,7 @@ struct MenuButton: View {
                         .font(.title2)
                         .foregroundStyle(color)
                 }
+                .accessibilityHidden(true)
 
                 // Text
                 VStack(alignment: .leading, spacing: 2) {
@@ -309,6 +366,7 @@ struct MenuButton: View {
 
                 Image(systemName: "chevron.right")
                     .foregroundStyle(.white.opacity(0.5))
+                    .accessibilityHidden(true)
             }
             .padding(16)
             .background(

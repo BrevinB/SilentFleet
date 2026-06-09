@@ -13,6 +13,10 @@ struct BoardView: View {
     var showingSonarPulse: Bool = false
     var rowScanHighlight: Int? = nil  // Row being scanned (yellow highlight)
     var recentShotCoordinate: Coordinate? = nil
+    /// When set, cell states are read from this map instead of being derived
+    /// from `board`. Used by online play, where the opponent's board is known
+    /// only through our own resolved shots (we never receive their ships).
+    var explicitCellStates: [Coordinate: CellState]? = nil
     var onCellTap: ((Coordinate) -> Void)?
 
     @ObservedObject private var inventory = PlayerInventory.shared
@@ -46,6 +50,7 @@ struct BoardView: View {
                         .frame(width: cellSize, height: 16)
                 }
             }
+            .accessibilityHidden(true)
 
             // Grid with row labels
             ForEach(0..<gridSize, id: \.self) { row in
@@ -55,13 +60,15 @@ struct BoardView: View {
                         .font(.caption2)
                         .foregroundStyle(theme.labelColor)
                         .frame(width: 20)
+                        .accessibilityHidden(true)
 
                     // Cells
                     ForEach(0..<gridSize, id: \.self) { col in
                         let coord = Coordinate(row: row, col: col)
+                        let state = cellState(for: coord)
                         CellView(
                             coordinate: coord,
-                            state: cellState(for: coord),
+                            state: state,
                             theme: theme,
                             skin: skin,
                             isHighlighted: highlightedCoordinates.contains(coord),
@@ -76,6 +83,10 @@ struct BoardView: View {
                         .onTapGesture {
                             onCellTap?(coord)
                         }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Row \(row + 1), Column \(col + 1)")
+                        .accessibilityValue(state.voiceOverDescription(isOpponent: isOpponentBoard))
+                        .accessibilityAddTraits(onCellTap != nil ? .isButton : [])
                     }
                 }
             }
@@ -92,6 +103,11 @@ struct BoardView: View {
     }
 
     private func cellState(for coord: Coordinate) -> CellState {
+        // Online opponent board: state comes from our own resolved shots only.
+        if let explicit = explicitCellStates {
+            return explicit[coord] ?? .empty
+        }
+
         // Check for shots
         if board.hasBeenShot(at: coord) {
             if board.hasShip(at: coord) {
@@ -154,6 +170,7 @@ struct CellView: View {
     @State private var showRipple: Bool = false
     @State private var sonarPulsePhase: CGFloat = 0
     @State private var rowScanPulsePhase: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var sonarOpacity: Double {
         0.5 + 0.3 * sin(sonarPulsePhase)
@@ -283,18 +300,28 @@ struct CellView: View {
     }
 
     private func startSonarPulse() {
+        guard !reduceMotion else { sonarPulsePhase = .pi / 2; return }
         withAnimation(.easeInOut(duration: 0.4).repeatForever(autoreverses: true)) {
             sonarPulsePhase = .pi
         }
     }
 
     private func startRowScanPulse() {
+        guard !reduceMotion else { rowScanPulsePhase = .pi / 2; return }
         withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
             rowScanPulsePhase = .pi
         }
     }
 
     private func triggerAnimation() {
+        if reduceMotion {
+            // Crossfade-only fallback: hold a static indicator, skip ripple/scale.
+            animationScale = 1.0
+            animationOpacity = 0
+            showRipple = false
+            return
+        }
+
         // Reset
         animationScale = 0.5
         animationOpacity = 1.0

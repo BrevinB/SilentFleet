@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <g fill="#FFFFFF">
+    <!-- Hull (rounded ends) -->
+    <path d="M260 600 Q 260 560 320 560 L704 560 Q 764 560 764 600 L764 640 Q 764 680 704 680 L320 680 Q 260 680 260 640 Z"/>
+    <!-- Conning tower / sail -->
+    <rect x="464" y="480" width="96" height="80" rx="10"/>
+    <!-- Periscope -->
+    <rect x="504" y="400" width="16" height="80"/>
+    <rect x="494" y="392" width="36" height="10"/>
+  </g>
+</svg>

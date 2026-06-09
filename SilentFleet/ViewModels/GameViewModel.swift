@@ -29,10 +29,10 @@ final class GameViewModel: ObservableObject {
 
     // MARK: - Configuration
 
-    private(set) var gameMode: GameMode = .casual
+    var gameMode: GameMode = .casual
     private(set) var aiDifficulty: AIDifficulty = .medium
-    private(set) var boardSplit: BoardSplit?
-    private(set) var gridSize: GridSize = .large
+    var boardSplit: BoardSplit?
+    var gridSize: GridSize = .large
 
     // AI targeting strategy
     private var aiTargetingStrategy: AITargetingStrategy?
@@ -578,6 +578,13 @@ final class GameViewModel: ObservableObject {
         try? await matchStore.delete(id: state.id)
     }
 
+    // MARK: - PlacementHost async bridge
+
+    /// PlacementHost protocol shim — GameViewModel's confirmPlacement is sync.
+    func commitPlacement() async -> Bool {
+        confirmPlacement()
+    }
+
     // MARK: - Haptic Feedback
 
     private func triggerShotHaptic(for result: ShotResult) {
@@ -680,4 +687,19 @@ enum CellState: Equatable {
         default: return nil
         }
     }
+
+    /// Spoken state for VoiceOver. Hides ship positions on the opponent board
+    /// so VO doesn't leak placement information.
+    func voiceOverDescription(isOpponent: Bool) -> String {
+        switch self {
+        case .empty: return "unexplored"
+        case .ship:  return isOpponent ? "unexplored" : "your ship"
+        case .hit:   return "hit"
+        case .miss:  return "miss"
+        case .sunk:  return "sunk ship"
+        }
+    }
 }
+
+extension GameViewModel: PlacementHost {}
+

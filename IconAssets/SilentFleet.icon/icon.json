@@ -1,0 +1,41 @@
+{
+  "fill" : {
+    "solid" : "#0B1A33"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        { "image-name" : "background-gradient.svg" }
+      ]
+    },
+    {
+      "layers" : [
+        { "image-name" : "sonar-grid.svg" }
+      ]
+    },
+    {
+      "layers" : [
+        { "image-name" : "waves.svg" }
+      ]
+    },
+    {
+      "layers" : [
+        { "image-name" : "crosshair-reticle.svg" }
+      ]
+    },
+    {
+      "layers" : [
+        { "image-name" : "ship-battleship.svg" }
+      ]
+    },
+    {
+      "layers" : [
+        { "image-name" : "target-blip.svg" }
+      ]
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [ "watchOS" ],
+    "squares" : "shared"
+  }
+}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <g fill="#FFFFFF">
+    <!-- Hull -->
+    <path d="M280 600 L744 600 L700 680 L324 680 Z"/>
+    <!-- Deck / superstructure base -->
+    <rect x="392" y="520" width="200" height="80"/>
+    <!-- Bridge tower -->
+    <rect x="448" y="380" width="88" height="140"/>
+    <!-- Mast -->
+    <rect x="478" y="240" width="28" height="140"/>
+    <!-- Antenna tip -->
+    <rect x="486" y="200" width="12" height="44"/>
+    <!-- Side detail (railings / radar bars) -->
+    <rect x="610" y="500" width="80" height="8"/>
+    <rect x="610" y="516" width="80" height="8"/>
+    <rect x="610" y="532" width="80" height="8"/>
+  </g>
+</svg>

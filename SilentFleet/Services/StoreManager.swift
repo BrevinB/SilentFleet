@@ -1,72 +1,125 @@
 import Foundation
 import Combine
-import StoreKit
+import RevenueCat
 
-struct CoinPack: Identifiable {
-    let id: String
-    let coins: Int
-    let displayPrice: String
-    let productID: String
-}
-
+/// In-app purchase manager backed by RevenueCat.
+///
+/// Coin packs are configured as a single Offering named "default" in the
+/// RevenueCat dashboard. Each package is linked to an App Store Connect
+/// Consumable. Local coin balance is the source of truth; RC's stored
+/// non-subscription transactions are used to credit coins once per purchase
+/// (so a restore doesn't double-credit).
 @MainActor
 final class StoreManager: ObservableObject {
     static let shared = StoreManager()
 
-    static let coinPacks: [CoinPack] = [
-        CoinPack(id: "pack_500", coins: 500, displayPrice: "$0.99", productID: "com.silentfleet.coins500"),
-        CoinPack(id: "pack_1200", coins: 1200, displayPrice: "$2.99", productID: "com.silentfleet.coins1200"),
-        CoinPack(id: "pack_3000", coins: 3000, displayPrice: "$5.99", productID: "com.silentfleet.coins3000"),
+    /// Maps RevenueCat package identifier → coin amount granted on purchase.
+    /// Must match what's configured in the RevenueCat dashboard.
+    private static let coinsByPackageID: [String: Int] = [
+        "coins_500":  500,
+        "coins_1200": 1200,
+        "coins_3000": 3000,
     ]
 
+    @Published private(set) var offering: Offering?
+    @Published private(set) var isLoadingOffering = false
     @Published var isPurchasing = false
+    @Published var errorMessage: String?
+
+    /// Set of RevenueCat transaction IDs we've already credited locally,
+    /// persisted across launches so a restore can't re-credit a consumable.
+    private let creditedTxKey = "rc_credited_transaction_ids"
+    private var creditedTxIDs: Set<String> {
+        get { Set(UserDefaults.standard.stringArray(forKey: creditedTxKey) ?? []) }
+        set { UserDefaults.standard.set(Array(newValue), forKey: creditedTxKey) }
+    }
 
     private init() {}
 
-    func configure() {
-        // RevenueCat configuration would go here:
-        // Purchases.configure(withAPIKey: "your_api_key")
+    /// Configure RevenueCat. Called once from `SilentFleetApp.init`.
+    /// Replace `apiKey` with the iOS Public App-Specific key from the RC dashboard.
+    func configure(apiKey: String) {
+        Purchases.logLevel = .warn
+        Purchases.configure(withAPIKey: apiKey)
+        // Load the current Offering up front so the shop UI has data ready.
+        Task { await refreshOffering() }
+        // Reconcile any non-subscription transactions on launch (handles pending
+        // purchases that completed while the app was closed).
+        Task { await reconcileTransactions() }
     }
 
-    func purchaseCoinPack(_ pack: CoinPack) async -> Bool {
+    /// Refresh the offering shown to the shop UI.
+    func refreshOffering() async {
+        isLoadingOffering = true
+        defer { isLoadingOffering = false }
+        do {
+            let offerings = try await Purchases.shared.offerings()
+            self.offering = offerings.current
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Convenience: list of (package, coin amount) tuples in display order
+    /// so the shop view doesn't have to know the mapping.
+    var coinPacks: [(package: Package, coins: Int)] {
+        guard let offering else { return [] }
+        return offering.availablePackages.compactMap { pkg in
+            guard let coins = Self.coinsByPackageID[pkg.identifier] else { return nil }
+            return (pkg, coins)
+        }
+    }
+
+    func purchase(_ package: Package) async -> Bool {
         isPurchasing = true
         defer { isPurchasing = false }
-
-        #if DEBUG
-        // In debug, instantly award coins without real IAP
-        try? await Task.sleep(for: .milliseconds(500))
-        PlayerInventory.shared.addCoins(pack.coins)
-        return true
-        #else
-        // Production: Use RevenueCat or StoreKit
         do {
-            let products = try await Product.products(for: [pack.productID])
-            guard let product = products.first else { return false }
-            let result = try await product.purchase()
-            switch result {
-            case .success(let verification):
-                if case .verified(let transaction) = verification {
-                    PlayerInventory.shared.addCoins(pack.coins)
-                    await transaction.finish()
-                    return true
-                }
-                return false
-            case .pending, .userCancelled:
-                return false
-            @unknown default:
-                return false
-            }
+            let result = try await Purchases.shared.purchase(package: package)
+            if result.userCancelled { return false }
+            await reconcileTransactions()
+            return true
         } catch {
+            errorMessage = error.localizedDescription
             return false
         }
-        #endif
     }
 
+    /// Restore — only meaningful for non-consumables, but Apple still requires
+    /// a "Restore Purchases" button on any IAP-bearing app.
     func restorePurchases() async {
-        #if DEBUG
-        // No-op in debug
-        #else
-        try? await AppStore.sync()
-        #endif
+        do {
+            _ = try await Purchases.shared.restorePurchases()
+            await reconcileTransactions()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
+
+    /// Walk RevenueCat's non-subscription transactions and credit coins for
+    /// any we haven't credited yet. This is idempotent.
+    private func reconcileTransactions() async {
+        do {
+            let info = try await Purchases.shared.customerInfo()
+            var credited = creditedTxIDs
+            for tx in info.nonSubscriptions {
+                guard !credited.contains(tx.transactionIdentifier) else { continue }
+                // RevenueCat exposes the product identifier — map back to package.
+                guard let coins = coinsForProductID(tx.productIdentifier) else { continue }
+                PlayerInventory.shared.addCoins(coins)
+                credited.insert(tx.transactionIdentifier)
+            }
+            creditedTxIDs = credited
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func coinsForProductID(_ productID: String) -> Int? {
+        guard let pkg = offering?.availablePackages.first(where: {
+            $0.storeProduct.productIdentifier == productID
+        }) else { return nil }
+        return Self.coinsByPackageID[pkg.identifier]
+    }
+
+    func dismissError() { errorMessage = nil }
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 enum CosmeticCatalog {
 
@@ -19,7 +20,7 @@ enum CosmeticCatalog {
         indicatorSunkBackground: .red.opacity(0.15),
         indicatorBorder: .white.opacity(0.2),
         indicatorSunkBorder: .red.opacity(0.3),
-        shipIcon: "ship.fill",
+        shipIcon: "sailboat.fill",
         shipIconShadowColor: .green,
         selectionHighlight: .cyan,
         selectionBadgeColor: .cyan,
@@ -29,7 +30,7 @@ enum CosmeticCatalog {
     static let stealth = ShipSkin(
         id: "skin_stealth",
         displayName: "Stealth",
-        price: 200,
+        price: 300,
         shipFill: .gray.opacity(0.9),
         shipBorder: .gray.opacity(0.7),
         shipPlacedBackground: .gray.opacity(0.3),
@@ -49,7 +50,7 @@ enum CosmeticCatalog {
     static let goldFleet = ShipSkin(
         id: "skin_gold",
         displayName: "Gold Fleet",
-        price: 300,
+        price: 600,
         shipFill: .yellow.opacity(0.85),
         shipBorder: .yellow.opacity(0.6),
         shipPlacedBackground: .yellow.opacity(0.25),
@@ -69,7 +70,7 @@ enum CosmeticCatalog {
     static let crimson = ShipSkin(
         id: "skin_crimson",
         displayName: "Crimson",
-        price: 250,
+        price: 450,
         shipFill: Color(red: 0.9, green: 0.2, blue: 0.3).opacity(0.85),
         shipBorder: Color(red: 0.9, green: 0.2, blue: 0.3).opacity(0.6),
         shipPlacedBackground: Color(red: 0.9, green: 0.2, blue: 0.3).opacity(0.25),
@@ -89,7 +90,7 @@ enum CosmeticCatalog {
     static let neon = ShipSkin(
         id: "skin_neon",
         displayName: "Neon",
-        price: 350,
+        price: 900,
         shipFill: Color(red: 0.0, green: 1.0, blue: 0.6).opacity(0.85),
         shipBorder: Color(red: 0.0, green: 1.0, blue: 0.6).opacity(0.6),
         shipPlacedBackground: Color(red: 0.0, green: 1.0, blue: 0.6).opacity(0.25),
@@ -109,7 +110,7 @@ enum CosmeticCatalog {
     static let arcticSkin = ShipSkin(
         id: "skin_arctic",
         displayName: "Arctic",
-        price: 400,
+        price: 1200,
         shipFill: Color(red: 0.7, green: 0.9, blue: 1.0).opacity(0.85),
         shipBorder: Color(red: 0.7, green: 0.9, blue: 1.0).opacity(0.6),
         shipPlacedBackground: Color(red: 0.7, green: 0.9, blue: 1.0).opacity(0.25),
@@ -160,7 +161,7 @@ enum CosmeticCatalog {
     static let deepOcean = BoardTheme(
         id: "theme_deep_ocean",
         displayName: "Deep Ocean",
-        price: 300,
+        price: 500,
         backgroundGradientTop: Color(red: 0.0, green: 0.1, blue: 0.3),
         backgroundGradientBottom: Color(red: 0.0, green: 0.02, blue: 0.1),
         waveColor: .cyan,
@@ -187,7 +188,7 @@ enum CosmeticCatalog {
     static let sunset = BoardTheme(
         id: "theme_sunset",
         displayName: "Sunset",
-        price: 400,
+        price: 750,
         backgroundGradientTop: Color(red: 0.4, green: 0.15, blue: 0.1),
         backgroundGradientBottom: Color(red: 0.15, green: 0.05, blue: 0.15),
         waveColor: .orange,
@@ -214,7 +215,7 @@ enum CosmeticCatalog {
     static let arcticTheme = BoardTheme(
         id: "theme_arctic",
         displayName: "Arctic",
-        price: 450,
+        price: 1200,
         backgroundGradientTop: Color(red: 0.15, green: 0.25, blue: 0.35),
         backgroundGradientBottom: Color(red: 0.05, green: 0.1, blue: 0.2),
         waveColor: Color(red: 0.7, green: 0.9, blue: 1.0),
@@ -241,7 +242,7 @@ enum CosmeticCatalog {
     static let volcanic = BoardTheme(
         id: "theme_volcanic",
         displayName: "Volcanic",
-        price: 500,
+        price: 1800,
         backgroundGradientTop: Color(red: 0.25, green: 0.05, blue: 0.0),
         backgroundGradientBottom: Color(red: 0.1, green: 0.02, blue: 0.0),
         waveColor: .red,

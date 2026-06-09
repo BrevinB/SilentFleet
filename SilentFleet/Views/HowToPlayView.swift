@@ -65,10 +65,12 @@ struct HowToPlayView: View {
                     .font(.system(size: 60))
                     .foregroundStyle(.cyan)
                     .padding(.top, 40)
+                    .accessibilityHidden(true)
 
                 Text("Welcome, Commander!")
                     .font(.title.weight(.bold))
                     .foregroundStyle(.white)
+                    .accessibilityAddTraits(.isHeader)
 
                 Text("Silent Fleet is a strategic naval warfare game where you command a fleet of ships against an AI opponent.")
                     .font(.body)
@@ -107,10 +109,12 @@ struct HowToPlayView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(.cyan)
                     .padding(.top, 40)
+                    .accessibilityHidden(true)
 
                 Text("Fleet & Placement")
                     .font(.title.weight(.bold))
                     .foregroundStyle(.white)
+                    .accessibilityAddTraits(.isHeader)
 
                 VStack(alignment: .leading, spacing: 16) {
                     ruleRow(number: "1", text: "Your fleet consists of ships of sizes 2, 3, 3, 4, and 5")
@@ -141,10 +145,12 @@ struct HowToPlayView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(.orange)
                     .padding(.top, 40)
+                    .accessibilityHidden(true)
 
                 Text("Battle & Turn Flow")
                     .font(.title.weight(.bold))
                     .foregroundStyle(.white)
+                    .accessibilityAddTraits(.isHeader)
 
                 VStack(alignment: .leading, spacing: 16) {
                     ruleRow(number: "1", text: "Tap on the enemy grid to fire a shot")
@@ -183,10 +189,12 @@ struct HowToPlayView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(.yellow)
                     .padding(.top, 40)
+                    .accessibilityHidden(true)
 
                 Text("Power-Ups")
                     .font(.title.weight(.bold))
                     .foregroundStyle(.white)
+                    .accessibilityAddTraits(.isHeader)
 
                 Text("Use power-ups before firing your shot. They don't consume your turn!")
                     .font(.subheadline)
@@ -231,10 +239,12 @@ struct HowToPlayView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(.green)
                     .padding(.top, 40)
+                    .accessibilityHidden(true)
 
                 Text("Game Modes")
                     .font(.title.weight(.bold))
                     .foregroundStyle(.white)
+                    .accessibilityAddTraits(.isHeader)
 
                 VStack(spacing: 16) {
                     modeInfoCard(
@@ -296,11 +306,13 @@ struct HowToPlayView: View {
             Image(systemName: icon)
                 .foregroundStyle(.cyan)
                 .frame(width: 24)
+                .accessibilityHidden(true)
             Text(text)
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.8))
             Spacer()
         }
+        .accessibilityElement(children: .combine)
     }
 
     private func ruleRow(number: String, text: String) -> some View {
@@ -316,6 +328,8 @@ struct HowToPlayView: View {
                 .foregroundStyle(.white.opacity(0.8))
             Spacer()
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Rule \(number): \(text)")
     }
 
     private func legendItem(icon: String, color: Color, label: String) -> some View {
@@ -323,6 +337,7 @@ struct HowToPlayView: View {
             Image(systemName: icon)
                 .foregroundStyle(color)
                 .font(.title3)
+                .accessibilityHidden(true)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.7))
@@ -333,6 +348,7 @@ struct HowToPlayView: View {
             RoundedRectangle(cornerRadius: 10)
                 .fill(.white.opacity(0.1))
         )
+        .accessibilityElement(children: .combine)
     }
 
     private func powerUpCard(icon: String, name: String, description: String, color: Color) -> some View {
@@ -341,6 +357,7 @@ struct HowToPlayView: View {
                 .font(.title)
                 .foregroundStyle(color)
                 .frame(width: 44)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(name)
@@ -361,6 +378,7 @@ struct HowToPlayView: View {
                         .stroke(color.opacity(0.3), lineWidth: 1)
                 )
         )
+        .accessibilityElement(children: .combine)
     }
 
     private func modeInfoCard(icon: String, name: String, features: [String], color: Color) -> some View {

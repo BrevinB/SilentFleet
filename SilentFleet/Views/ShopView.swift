@@ -1,4 +1,5 @@
 import SwiftUI
+import RevenueCat
 
 struct ShopView: View {
     @ObservedObject private var inventory = PlayerInventory.shared
@@ -102,8 +103,33 @@ struct ShopView: View {
 
     private var coinPacksTab: some View {
         LazyVStack(spacing: 12) {
-            ForEach(StoreManager.coinPacks) { pack in
-                CoinPackCard(pack: pack, store: store)
+            if store.isLoadingOffering && store.coinPacks.isEmpty {
+                ProgressView().tint(.white).padding(.top, 40)
+            } else if store.coinPacks.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "wifi.slash")
+                        .font(.title)
+                        .foregroundStyle(.white.opacity(0.4))
+                    Text("Coin packs unavailable")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.6))
+                    Button("Retry") {
+                        Task { await store.refreshOffering() }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.cyan)
+                }
+                .padding(.top, 40)
+            } else {
+                let maxCoins = store.coinPacks.map(\.coins).max() ?? 0
+                ForEach(store.coinPacks, id: \.package.identifier) { entry in
+                    CoinPackCard(
+                        package: entry.package,
+                        coins: entry.coins,
+                        isBestValue: entry.coins == maxCoins && store.coinPacks.count > 1,
+                        store: store
+                    )
+                }
             }
 
             Button {
@@ -130,7 +156,7 @@ private struct SkinCard: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            // Color swatches
+            // Color swatches (decorative — the skin name carries the meaning)
             HStack(spacing: 4) {
                 RoundedRectangle(cornerRadius: 4)
                     .fill(skin.shipFill)
@@ -142,6 +168,7 @@ private struct SkinCard: View {
                     .fill(skin.selectionHighlight)
                     .frame(width: 20, height: 36)
             }
+            .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
@@ -170,6 +197,7 @@ private struct SkinCard: View {
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.6))
             }
+            .accessibilityElement(children: .combine)
 
             Spacer()
 
@@ -178,6 +206,7 @@ private struct SkinCard: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.title2)
                     .foregroundStyle(.green)
+                    .accessibilityHidden(true)
             } else if isOwned {
                 Button("Equip") {
                     inventory.equipSkin(skin)
@@ -187,6 +216,7 @@ private struct SkinCard: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(Capsule().fill(.cyan))
+                .accessibilityLabel("Equip \(skin.displayName)")
             } else {
                 Button {
                     inventory.purchaseSkin(skin)
@@ -204,6 +234,7 @@ private struct SkinCard: View {
                 }
                 .disabled(inventory.coinBalance < skin.price)
                 .opacity(inventory.coinBalance < skin.price ? 0.5 : 1)
+                .accessibilityLabel("Buy \(skin.displayName) for \(skin.price) coins")
             }
         }
         .padding(14)
@@ -229,7 +260,7 @@ private struct ThemeCard: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            // Mini gradient preview
+            // Mini gradient preview (decorative)
             RoundedRectangle(cornerRadius: 6)
                 .fill(
                     LinearGradient(
@@ -240,7 +271,6 @@ private struct ThemeCard: View {
                 )
                 .frame(width: 44, height: 44)
                 .overlay(
-                    // Cell color swatches
                     HStack(spacing: 2) {
                         Circle().fill(theme.cellEmpty).frame(width: 8, height: 8)
                         Circle().fill(theme.cellHit).frame(width: 8, height: 8)
@@ -248,6 +278,7 @@ private struct ThemeCard: View {
                     }
                 )
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(.white.opacity(0.2), lineWidth: 1))
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
@@ -276,6 +307,7 @@ private struct ThemeCard: View {
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.6))
             }
+            .accessibilityElement(children: .combine)
 
             Spacer()
 
@@ -283,6 +315,7 @@ private struct ThemeCard: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.title2)
                     .foregroundStyle(.green)
+                    .accessibilityHidden(true)
             } else if isOwned {
                 Button("Equip") {
                     inventory.equipTheme(theme)
@@ -292,6 +325,7 @@ private struct ThemeCard: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(Capsule().fill(.cyan))
+                .accessibilityLabel("Equip \(theme.displayName)")
             } else {
                 Button {
                     inventory.purchaseTheme(theme)
@@ -309,6 +343,7 @@ private struct ThemeCard: View {
                 }
                 .disabled(inventory.coinBalance < theme.price)
                 .opacity(inventory.coinBalance < theme.price ? 0.5 : 1)
+                .accessibilityLabel("Buy \(theme.displayName) for \(theme.price) coins")
             }
         }
         .padding(14)
@@ -326,52 +361,74 @@ private struct ThemeCard: View {
 // MARK: - Coin Pack Card
 
 private struct CoinPackCard: View {
-    let pack: CoinPack
+    let package: Package
+    let coins: Int
+    var isBestValue: Bool = false
     @ObservedObject var store: StoreManager
 
     var body: some View {
         HStack(spacing: 14) {
-            // Coin icon
             ZStack {
                 Circle()
-                    .fill(.yellow.opacity(0.2))
+                    .fill(.yellow.opacity(isBestValue ? 0.3 : 0.2))
                     .frame(width: 50, height: 50)
                 Image(systemName: "dollarsign.circle.fill")
                     .font(.title)
                     .foregroundStyle(.yellow)
             }
+            .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(pack.coins) Coins")
-                    .font(.headline)
-                    .foregroundStyle(.white)
+                HStack(spacing: 6) {
+                    Text("\(coins) Coins")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+
+                    if isBestValue {
+                        Text("BEST VALUE")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.yellow)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(.yellow.opacity(0.18))
+                                    .overlay(Capsule().stroke(.yellow.opacity(0.6), lineWidth: 1))
+                            )
+                    }
+                }
                 Text("Instant delivery")
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.5))
             }
+            .accessibilityElement(children: .combine)
 
             Spacer()
 
             Button {
-                Task { await store.purchaseCoinPack(pack) }
+                Task { _ = await store.purchase(package) }
             } label: {
-                Text(pack.displayPrice)
+                Text(package.storeProduct.localizedPriceString)
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
-                    .background(Capsule().fill(.blue))
+                    .background(Capsule().fill(isBestValue ? Color.yellow.opacity(0.85) : Color.blue))
             }
             .disabled(store.isPurchasing)
             .opacity(store.isPurchasing ? 0.5 : 1)
+            .accessibilityLabel("Buy \(coins) coins for \(package.storeProduct.localizedPriceString)\(isBestValue ? ", best value" : "")")
         }
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(.white.opacity(0.08))
+                .fill(.white.opacity(isBestValue ? 0.12 : 0.08))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(.white.opacity(0.12), lineWidth: 1)
+                        .stroke(
+                            isBestValue ? .yellow.opacity(0.45) : .white.opacity(0.12),
+                            lineWidth: isBestValue ? 1.5 : 1
+                        )
                 )
         )
     }

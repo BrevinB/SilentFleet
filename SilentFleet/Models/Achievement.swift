@@ -1,5 +1,6 @@
 import Foundation
 import GameEngine
+import Combine
 
 /// A single achievement definition
 struct Achievement: Identifiable, Equatable {
@@ -66,7 +67,7 @@ final class AchievementManager: ObservableObject {
             title: "First Blood",
             description: "Win your first game",
             icon: "trophy.fill",
-            coinReward: 50,
+            coinReward: 25,
             isSecret: false,
             check: { stats, _ in stats.gamesWon >= 1 }
         ),
@@ -75,7 +76,7 @@ final class AchievementManager: ObservableObject {
             title: "Veteran Captain",
             description: "Win 10 games",
             icon: "medal.fill",
-            coinReward: 100,
+            coinReward: 50,
             isSecret: false,
             check: { stats, _ in stats.gamesWon >= 10 }
         ),
@@ -84,7 +85,7 @@ final class AchievementManager: ObservableObject {
             title: "Fleet Admiral",
             description: "Win 50 games",
             icon: "star.fill",
-            coinReward: 300,
+            coinReward: 150,
             isSecret: false,
             check: { stats, _ in stats.gamesWon >= 50 }
         ),
@@ -93,7 +94,7 @@ final class AchievementManager: ObservableObject {
             title: "Seasoned Sailor",
             description: "Play 100 games",
             icon: "anchor.circle.fill",
-            coinReward: 200,
+            coinReward: 100,
             isSecret: false,
             check: { stats, _ in stats.gamesPlayed >= 100 }
         ),
@@ -104,7 +105,7 @@ final class AchievementManager: ObservableObject {
             title: "On a Roll",
             description: "Win 3 games in a row",
             icon: "flame.fill",
-            coinReward: 75,
+            coinReward: 40,
             isSecret: false,
             check: { stats, _ in stats.bestWinStreak >= 3 }
         ),
@@ -113,7 +114,7 @@ final class AchievementManager: ObservableObject {
             title: "Unstoppable",
             description: "Win 5 games in a row",
             icon: "flame.circle.fill",
-            coinReward: 150,
+            coinReward: 75,
             isSecret: false,
             check: { stats, _ in stats.bestWinStreak >= 5 }
         ),
@@ -122,7 +123,7 @@ final class AchievementManager: ObservableObject {
             title: "Legendary",
             description: "Win 10 games in a row",
             icon: "bolt.shield.fill",
-            coinReward: 500,
+            coinReward: 250,
             isSecret: false,
             check: { stats, _ in stats.bestWinStreak >= 10 }
         ),
@@ -133,7 +134,7 @@ final class AchievementManager: ObservableObject {
             title: "Sharpshooter",
             description: "Achieve 70%+ accuracy in a winning game",
             icon: "scope",
-            coinReward: 100,
+            coinReward: 50,
             isSecret: false,
             check: { stats, _ in stats.bestAccuracy >= 70 }
         ),
@@ -142,7 +143,7 @@ final class AchievementManager: ObservableObject {
             title: "Eagle Eye",
             description: "Achieve 85%+ accuracy in a winning game",
             icon: "eye.fill",
-            coinReward: 250,
+            coinReward: 125,
             isSecret: false,
             check: { stats, _ in stats.bestAccuracy >= 85 }
         ),
@@ -151,7 +152,7 @@ final class AchievementManager: ObservableObject {
             title: "Flawless Victory",
             description: "Win without losing a single ship",
             icon: "checkmark.shield.fill",
-            coinReward: 200,
+            coinReward: 100,
             isSecret: false,
             check: { stats, _ in stats.perfectGames >= 1 }
         ),
@@ -160,7 +161,7 @@ final class AchievementManager: ObservableObject {
             title: "Purist",
             description: "Win a game without using any power-ups",
             icon: "hand.raised.fill",
-            coinReward: 150,
+            coinReward: 75,
             isSecret: false,
             check: { stats, _ in stats.noPowerUpWins >= 1 }
         ),
@@ -171,7 +172,7 @@ final class AchievementManager: ObservableObject {
             title: "Rising Tide",
             description: "Win a game on Medium difficulty",
             icon: "water.waves",
-            coinReward: 50,
+            coinReward: 25,
             isSecret: false,
             check: { stats, _ in stats.mediumWins >= 1 }
         ),
@@ -180,7 +181,7 @@ final class AchievementManager: ObservableObject {
             title: "Storm Chaser",
             description: "Win a game on Hard difficulty",
             icon: "cloud.bolt.fill",
-            coinReward: 100,
+            coinReward: 50,
             isSecret: false,
             check: { stats, _ in stats.hardWins >= 1 }
         ),
@@ -189,7 +190,7 @@ final class AchievementManager: ObservableObject {
             title: "Master Tactician",
             description: "Win 10 games on Hard difficulty",
             icon: "crown.fill",
-            coinReward: 400,
+            coinReward: 200,
             isSecret: false,
             check: { stats, _ in stats.hardWins >= 10 }
         ),
@@ -198,7 +199,7 @@ final class AchievementManager: ObservableObject {
             title: "Competitive Spirit",
             description: "Win your first Ranked game",
             icon: "flag.checkered",
-            coinReward: 75,
+            coinReward: 40,
             isSecret: false,
             check: { stats, _ in stats.rankedWins >= 1 }
         ),
@@ -209,7 +210,7 @@ final class AchievementManager: ObservableObject {
             title: "Depth Charge",
             description: "Sink 25 ships total",
             icon: "ferry.fill",
-            coinReward: 75,
+            coinReward: 40,
             isSecret: false,
             check: { stats, _ in stats.totalShipsSunk >= 25 }
         ),
@@ -218,7 +219,7 @@ final class AchievementManager: ObservableObject {
             title: "Scourge of the Seas",
             description: "Sink 100 ships total",
             icon: "tornado",
-            coinReward: 200,
+            coinReward: 100,
             isSecret: false,
             check: { stats, _ in stats.totalShipsSunk >= 100 }
         ),
@@ -227,7 +228,7 @@ final class AchievementManager: ObservableObject {
             title: "Davy Jones",
             description: "Sink 500 ships total",
             icon: "hurricane",
-            coinReward: 500,
+            coinReward: 250,
             isSecret: true,
             check: { stats, _ in stats.totalShipsSunk >= 500 }
         ),
@@ -238,7 +239,7 @@ final class AchievementManager: ObservableObject {
             title: "Untouchable",
             description: "Win 5 perfect games (no ships lost)",
             icon: "sparkles",
-            coinReward: 300,
+            coinReward: 150,
             isSecret: true,
             check: { stats, _ in stats.perfectGames >= 5 }
         ),
@@ -247,7 +248,7 @@ final class AchievementManager: ObservableObject {
             title: "Jack of All Trades",
             description: "Win at least one game on each difficulty",
             icon: "list.star",
-            coinReward: 150,
+            coinReward: 75,
             isSecret: false,
             check: { stats, _ in
                 stats.easyWins >= 1 && stats.mediumWins >= 1 && stats.hardWins >= 1

@@ -94,9 +94,19 @@ struct SettingsView: View {
                         // About Section
                         settingsSection(title: "About", icon: "info.circle.fill") {
                             VStack(spacing: 12) {
-                                aboutRow(label: "Version", value: "1.0")
-                                aboutRow(label: "Build", value: "Phase 5")
-                                aboutRow(label: "Engine", value: "GameEngine v1")
+                                aboutRow(label: "Version", value: appVersion)
+                                aboutRow(label: "Build", value: appBuild)
+                            }
+                        }
+
+                        // Legal Section
+                        settingsSection(title: "Legal & Support", icon: "doc.text.fill") {
+                            VStack(spacing: 0) {
+                                linkRow(label: "Privacy Policy", icon: "hand.raised.fill", url: AppConfig.privacyPolicyURL)
+                                Divider().background(.white.opacity(0.1))
+                                linkRow(label: "Terms of Service", icon: "doc.plaintext.fill", url: AppConfig.termsOfServiceURL)
+                                Divider().background(.white.opacity(0.1))
+                                linkRow(label: "Support", icon: "questionmark.circle.fill", url: AppConfig.supportURL)
                             }
                         }
                     }
@@ -118,6 +128,14 @@ struct SettingsView: View {
     }
 
     // MARK: - Helpers
+
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    }
+
+    private var appBuild: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
 
     private func settingsSection<Content: View>(title: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -150,6 +168,23 @@ struct SettingsView: View {
             Text(value)
                 .foregroundStyle(.white)
                 .font(.subheadline.weight(.medium))
+        }
+    }
+
+    private func linkRow(label: String, icon: String, url: URL) -> some View {
+        Link(destination: url) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .foregroundStyle(.cyan)
+                    .frame(width: 24)
+                Text(label)
+                    .foregroundStyle(.white)
+                Spacer()
+                Image(systemName: "arrow.up.right.square")
+                    .foregroundStyle(.white.opacity(0.4))
+                    .font(.caption)
+            }
+            .padding(.vertical, 10)
         }
     }
 }

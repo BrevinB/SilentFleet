@@ -7,84 +7,84 @@ final class PlayerStats: ObservableObject {
     static let shared = PlayerStats()
 
     private let defaults = UserDefaults.standard
-    private let prefix = "stats_"
+    private static let prefix = "stats_"
 
     // MARK: - Lifetime Stats
 
     @Published var gamesPlayed: Int {
-        didSet { defaults.set(gamesPlayed, forKey: key("gamesPlayed")) }
+        didSet { defaults.set(gamesPlayed, forKey: Self.key("gamesPlayed")) }
     }
 
     @Published var gamesWon: Int {
-        didSet { defaults.set(gamesWon, forKey: key("gamesWon")) }
+        didSet { defaults.set(gamesWon, forKey: Self.key("gamesWon")) }
     }
 
     @Published var gamesLost: Int {
-        didSet { defaults.set(gamesLost, forKey: key("gamesLost")) }
+        didSet { defaults.set(gamesLost, forKey: Self.key("gamesLost")) }
     }
 
     @Published var totalShipsSunk: Int {
-        didSet { defaults.set(totalShipsSunk, forKey: key("totalShipsSunk")) }
+        didSet { defaults.set(totalShipsSunk, forKey: Self.key("totalShipsSunk")) }
     }
 
     @Published var totalShipsLost: Int {
-        didSet { defaults.set(totalShipsLost, forKey: key("totalShipsLost")) }
+        didSet { defaults.set(totalShipsLost, forKey: Self.key("totalShipsLost")) }
     }
 
     @Published var totalShotsFired: Int {
-        didSet { defaults.set(totalShotsFired, forKey: key("totalShotsFired")) }
+        didSet { defaults.set(totalShotsFired, forKey: Self.key("totalShotsFired")) }
     }
 
     @Published var totalShotsHit: Int {
-        didSet { defaults.set(totalShotsHit, forKey: key("totalShotsHit")) }
+        didSet { defaults.set(totalShotsHit, forKey: Self.key("totalShotsHit")) }
     }
 
     // MARK: - Streak Stats
 
     @Published var currentWinStreak: Int {
-        didSet { defaults.set(currentWinStreak, forKey: key("currentWinStreak")) }
+        didSet { defaults.set(currentWinStreak, forKey: Self.key("currentWinStreak")) }
     }
 
     @Published var bestWinStreak: Int {
-        didSet { defaults.set(bestWinStreak, forKey: key("bestWinStreak")) }
+        didSet { defaults.set(bestWinStreak, forKey: Self.key("bestWinStreak")) }
     }
 
     // MARK: - Best Performance Records
 
     @Published var bestAccuracy: Double {
-        didSet { defaults.set(bestAccuracy, forKey: key("bestAccuracy")) }
+        didSet { defaults.set(bestAccuracy, forKey: Self.key("bestAccuracy")) }
     }
 
     @Published var fewestTurnsWin: Int {
-        didSet { defaults.set(fewestTurnsWin, forKey: key("fewestTurnsWin")) }
+        didSet { defaults.set(fewestTurnsWin, forKey: Self.key("fewestTurnsWin")) }
     }
 
     // MARK: - Per-Difficulty Stats
 
     @Published var easyWins: Int {
-        didSet { defaults.set(easyWins, forKey: key("easyWins")) }
+        didSet { defaults.set(easyWins, forKey: Self.key("easyWins")) }
     }
 
     @Published var mediumWins: Int {
-        didSet { defaults.set(mediumWins, forKey: key("mediumWins")) }
+        didSet { defaults.set(mediumWins, forKey: Self.key("mediumWins")) }
     }
 
     @Published var hardWins: Int {
-        didSet { defaults.set(hardWins, forKey: key("hardWins")) }
+        didSet { defaults.set(hardWins, forKey: Self.key("hardWins")) }
     }
 
     @Published var rankedWins: Int {
-        didSet { defaults.set(rankedWins, forKey: key("rankedWins")) }
+        didSet { defaults.set(rankedWins, forKey: Self.key("rankedWins")) }
     }
 
     // MARK: - Special Counters
 
     @Published var perfectGames: Int {
-        didSet { defaults.set(perfectGames, forKey: key("perfectGames")) }
+        didSet { defaults.set(perfectGames, forKey: Self.key("perfectGames")) }
     }
 
     @Published var noPowerUpWins: Int {
-        didSet { defaults.set(noPowerUpWins, forKey: key("noPowerUpWins")) }
+        didSet { defaults.set(noPowerUpWins, forKey: Self.key("noPowerUpWins")) }
     }
 
     // MARK: - Computed
@@ -102,27 +102,27 @@ final class PlayerStats: ObservableObject {
     // MARK: - Init
 
     private init() {
-        self.gamesPlayed = defaults.integer(forKey: key("gamesPlayed"))
-        self.gamesWon = defaults.integer(forKey: key("gamesWon"))
-        self.gamesLost = defaults.integer(forKey: key("gamesLost"))
-        self.totalShipsSunk = defaults.integer(forKey: key("totalShipsSunk"))
-        self.totalShipsLost = defaults.integer(forKey: key("totalShipsLost"))
-        self.totalShotsFired = defaults.integer(forKey: key("totalShotsFired"))
-        self.totalShotsHit = defaults.integer(forKey: key("totalShotsHit"))
-        self.currentWinStreak = defaults.integer(forKey: key("currentWinStreak"))
-        self.bestWinStreak = defaults.integer(forKey: key("bestWinStreak"))
-        self.bestAccuracy = defaults.double(forKey: key("bestAccuracy"))
-        self.fewestTurnsWin = defaults.integer(forKey: key("fewestTurnsWin"))
-        self.easyWins = defaults.integer(forKey: key("easyWins"))
-        self.mediumWins = defaults.integer(forKey: key("mediumWins"))
-        self.hardWins = defaults.integer(forKey: key("hardWins"))
-        self.rankedWins = defaults.integer(forKey: key("rankedWins"))
-        self.perfectGames = defaults.integer(forKey: key("perfectGames"))
-        self.noPowerUpWins = defaults.integer(forKey: key("noPowerUpWins"))
+        self.gamesPlayed = defaults.integer(forKey: Self.key("gamesPlayed"))
+        self.gamesWon = defaults.integer(forKey: Self.key("gamesWon"))
+        self.gamesLost = defaults.integer(forKey: Self.key("gamesLost"))
+        self.totalShipsSunk = defaults.integer(forKey: Self.key("totalShipsSunk"))
+        self.totalShipsLost = defaults.integer(forKey: Self.key("totalShipsLost"))
+        self.totalShotsFired = defaults.integer(forKey: Self.key("totalShotsFired"))
+        self.totalShotsHit = defaults.integer(forKey: Self.key("totalShotsHit"))
+        self.currentWinStreak = defaults.integer(forKey: Self.key("currentWinStreak"))
+        self.bestWinStreak = defaults.integer(forKey: Self.key("bestWinStreak"))
+        self.bestAccuracy = defaults.double(forKey: Self.key("bestAccuracy"))
+        self.fewestTurnsWin = defaults.integer(forKey: Self.key("fewestTurnsWin"))
+        self.easyWins = defaults.integer(forKey: Self.key("easyWins"))
+        self.mediumWins = defaults.integer(forKey: Self.key("mediumWins"))
+        self.hardWins = defaults.integer(forKey: Self.key("hardWins"))
+        self.rankedWins = defaults.integer(forKey: Self.key("rankedWins"))
+        self.perfectGames = defaults.integer(forKey: Self.key("perfectGames"))
+        self.noPowerUpWins = defaults.integer(forKey: Self.key("noPowerUpWins"))
     }
 
-    private func key(_ name: String) -> String {
-        "\(prefix)\(name)"
+    private static func key(_ name: String) -> String {
+        "\(Self.prefix)\(name)"
     }
 
     // MARK: - Recording
@@ -196,6 +196,12 @@ final class PlayerStats: ObservableObject {
         }
 
         // Check for newly unlocked achievements
-        return AchievementManager.shared.evaluateAll(stats: self, lastGameState: state)
+        let newlyUnlocked = AchievementManager.shared.evaluateAll(stats: self, lastGameState: state)
+
+        // Sync to Game Center (no-ops if unauthenticated).
+        GameCenterReporter.submitLeaderboards(stats: self)
+        GameCenterReporter.reportAchievements(localIDs: newlyUnlocked.map(\.id))
+
+        return newlyUnlocked
     }
 }
