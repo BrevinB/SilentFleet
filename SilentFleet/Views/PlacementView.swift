@@ -153,6 +153,8 @@ struct PlacementView<Host: PlacementHost>: View {
                             .foregroundStyle(.white.opacity(0.7))
                     }
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.updatesFrequently)
                 .padding(.top)
 
                 // Board with placement preview
@@ -402,6 +404,7 @@ struct PlacementView<Host: PlacementHost>: View {
                 )
                 .position(dragLocation)
                 .allowsHitTesting(false)
+                .accessibilityHidden(true)
             }
         }
         .coordinateSpace(name: "placement")
@@ -479,6 +482,7 @@ struct ShipSelectionView<Host: PlacementHost>: View {
             Text("Available Ships")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.7))
+                .accessibilityAddTraits(.isHeader)
 
             HStack(spacing: 12) {
                 ForEach(groupedSizes, id: \.size) { item in
@@ -573,6 +577,10 @@ struct DraggableShipButton: View {
                 }
         )
         .allowsHitTesting(count > 0)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Ship, size \(size), \(count) remaining")
+        .accessibilityHint("Selects this ship for placement.")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
 
@@ -611,6 +619,15 @@ struct PlacementBoardView: View {
         placedShips.first { $0.occupies(coord) }
     }
 
+    // VoiceOver label for a board cell: coordinate plus state
+    private func cellAccessibilityLabel(for coord: Coordinate) -> String {
+        if let ship = shipAt(coord) {
+            let orientationName = ship.orientation == .horizontal ? "horizontal" : "vertical"
+            return "Row \(coord.row + 1), Column \(coord.col + 1). Ship, size \(ship.size), \(orientationName)"
+        }
+        return "Row \(coord.row + 1), Column \(coord.col + 1), empty"
+    }
+
     // Calculate the coordinate from a position within the grid
     private func coordinateFromPosition(_ position: CGPoint) -> Coordinate? {
         // Account for label width offset
@@ -643,6 +660,7 @@ struct PlacementBoardView: View {
                         .font(.caption2)
                         .foregroundStyle(theme.labelColor)
                         .frame(width: cellSize, height: 16)
+                        .accessibilityHidden(true)
                 }
             }
 
@@ -654,6 +672,7 @@ struct PlacementBoardView: View {
                         .font(.caption2)
                         .foregroundStyle(theme.labelColor)
                         .frame(width: labelWidth)
+                        .accessibilityHidden(true)
 
                     // Cells
                     ForEach(0..<gridSize, id: \.self) { col in
@@ -667,6 +686,8 @@ struct PlacementBoardView: View {
                             theme: theme
                         )
                         .frame(width: cellSize, height: cellSize)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(cellAccessibilityLabel(for: coord))
                     }
                 }
             }

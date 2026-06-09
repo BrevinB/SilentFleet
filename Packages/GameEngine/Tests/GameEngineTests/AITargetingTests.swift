@@ -148,6 +148,29 @@ final class AITargetingTests: XCTestCase {
         XCTAssertGreaterThan(centerCount, 10, "Should consider center cells")
     }
 
+    func testHardAIAvoidsCellsAdjacentToSunkShips() {
+        let strategy = HuntTargetStrategy(accuracy: 1.0, useProbabilityDensity: true)
+
+        // A small ship that we fully sink, and another ship still afloat
+        let sunkShip = Ship(size: 2, origin: Coordinate(row: 5, col: 5), orientation: .horizontal)
+        var board = Board(ships: [
+            sunkShip,
+            Ship(size: 3, origin: Coordinate(row: 0, col: 0), orientation: .horizontal)
+        ])
+        _ = board.receiveShot(at: Coordinate(row: 5, col: 5))
+        _ = board.receiveShot(at: Coordinate(row: 5, col: 6))
+
+        // No-touch rule means no ship can occupy any cell adjacent to the sunk ship
+        let forbidden = board.ships[0].adjacentCoordinates(boardSize: board.boardSize)
+        XCTAssertTrue(board.ships[0].isSunk)
+
+        for _ in 0..<50 {
+            let target = strategy.selectTarget(board: board, previousResults: [])
+            XCTAssertFalse(forbidden.contains(target), "Hard AI should never shoot a cell adjacent to a sunk ship")
+            XCTAssertFalse(board.hasBeenShot(at: target), "Should only select unshot cells")
+        }
+    }
+
     // MARK: - Edge Cases
 
     func testHandlesFullyShootBoard() {

@@ -434,6 +434,10 @@ final class GameViewModel: ObservableObject {
     }
 
     private func executeAITurnWithDelay() async {
+        // Start computing the AI's shot off the main thread while the
+        // result-viewing and "thinking" animations play.
+        let pendingTarget = computeAITargetInBackground()
+
         // First, let player see their result for a moment
         try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5s to view player's result
 
@@ -457,12 +461,25 @@ final class GameViewModel: ObservableObject {
         try? await Task.sleep(nanoseconds: thinkingTime)
 
         // Execute AI turn - shot will animate on visible player board
-        await executeAITurn()
+        await executeAITurn(precomputedTarget: await pendingTarget?.value)
 
         isAIThinking = false
     }
 
-    private func executeAITurn() async {
+    /// Runs the targeting strategy on a background task so large-board
+    /// probability scans never block the main thread.
+    private func computeAITargetInBackground() -> Task<Coordinate, Never>? {
+        guard let state = gameState, state.currentPlayerIndex == 1,
+              let strategy = aiTargetingStrategy else { return nil }
+
+        let board = state.player1.board
+        let aiResults = state.turnHistory.filter { $0.playerID == state.player2.id }
+        return Task.detached(priority: .userInitiated) {
+            strategy.selectTarget(board: board, previousResults: aiResults)
+        }
+    }
+
+    private func executeAITurn(precomputedTarget: Coordinate? = nil) async {
         guard var state = gameState, state.currentPlayerIndex == 1 else {
             isAIThinking = false
             return
@@ -470,10 +487,10 @@ final class GameViewModel: ObservableObject {
 
         // Use smart targeting strategy
         let target: Coordinate
-        if let strategy = aiTargetingStrategy {
-            // Get results for player 1's board (what AI has shot at)
-            let aiResults = state.turnHistory.filter { $0.playerID == state.player2.id }
-            target = strategy.selectTarget(board: state.player1.board, previousResults: aiResults)
+        if let precomputedTarget, !state.player1.board.hasBeenShot(at: precomputedTarget) {
+            target = precomputedTarget
+        } else if let pending = computeAITargetInBackground() {
+            target = await pending.value
         } else {
             // Fallback to random
             let validShots = TurnEngine.validShotCoordinates(in: state)

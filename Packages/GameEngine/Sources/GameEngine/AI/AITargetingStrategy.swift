@@ -73,9 +73,19 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         let boardSize = board.boardSize
 
         // Get all unshot coordinates
-        let unshotCoords = getUnshotCoordinates(board: board, boardSize: boardSize)
+        var unshotCoords = getUnshotCoordinates(board: board, boardSize: boardSize)
         guard !unshotCoords.isEmpty else {
             return Coordinate(row: 0, col: 0)
+        }
+
+        // Hard AI applies the no-touch placement rule: cells adjacent to a sunk
+        // ship can never hold another ship, so never spend shots there.
+        if useProbabilityDensity {
+            let impossible = coordinatesAdjacentToSunkShips(board: board)
+            let possible = unshotCoords.subtracting(impossible)
+            if !possible.isEmpty {
+                unshotCoords = possible
+            }
         }
 
         // Find unhit hits (hits that aren't part of a sunk ship)
@@ -273,6 +283,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
     private func selectProbabilityBasedShot(board: Board, unshotCoords: Set<Coordinate>, boardSize: Int) -> Coordinate {
         // Calculate probability density based on where ships could fit
         var density: [Coordinate: Int] = [:]
+        let impossible = coordinatesAdjacentToSunkShips(board: board)
 
         for coord in unshotCoords {
             density[coord] = 0
@@ -286,7 +297,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
             for coord in unshotCoords {
                 // Check horizontal placement starting at various positions
                 for startCol in max(0, coord.col - size + 1)...min(boardSize - size, coord.col) {
-                    if canPlaceShip(row: coord.row, col: startCol, size: size, horizontal: true, board: board, boardSize: boardSize) {
+                    if canPlaceShip(row: coord.row, col: startCol, size: size, horizontal: true, board: board, boardSize: boardSize, impossible: impossible) {
                         // This placement would cover `coord`
                         density[coord, default: 0] += 1
                     }
@@ -294,7 +305,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
 
                 // Check vertical placement
                 for startRow in max(0, coord.row - size + 1)...min(boardSize - size, coord.row) {
-                    if canPlaceShip(row: startRow, col: coord.col, size: size, horizontal: false, board: board, boardSize: boardSize) {
+                    if canPlaceShip(row: startRow, col: coord.col, size: size, horizontal: false, board: board, boardSize: boardSize, impossible: impossible) {
                         density[coord, default: 0] += 1
                     }
                 }
@@ -309,7 +320,7 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
         return topCandidates.randomElement() ?? unshotCoords.randomElement() ?? Coordinate(row: 0, col: 0)
     }
 
-    private func canPlaceShip(row: Int, col: Int, size: Int, horizontal: Bool, board: Board, boardSize: Int) -> Bool {
+    private func canPlaceShip(row: Int, col: Int, size: Int, horizontal: Bool, board: Board, boardSize: Int, impossible: Set<Coordinate> = []) -> Bool {
         for i in 0..<size {
             let checkRow = horizontal ? row : row + i
             let checkCol = horizontal ? col + i : col
@@ -324,8 +335,23 @@ public struct HuntTargetStrategy: AITargetingStrategy, Sendable {
             if board.hasBeenShot(at: coord) && !board.hasShip(at: coord) {
                 return false
             }
+
+            // Can't place adjacent to a sunk ship (no-touch rule)
+            if impossible.contains(coord) {
+                return false
+            }
         }
         return true
+    }
+
+    /// Coordinates the no-touch placement rule guarantees are empty:
+    /// every cell adjacent (including diagonals) to an already-sunk ship.
+    private func coordinatesAdjacentToSunkShips(board: Board) -> Set<Coordinate> {
+        var result = Set<Coordinate>()
+        for ship in board.ships where ship.isSunk {
+            result.formUnion(ship.adjacentCoordinates(boardSize: board.boardSize))
+        }
+        return result
     }
 
     private func getRemainingShipSizes(board: Board) -> [Int] {

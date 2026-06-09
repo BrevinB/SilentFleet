@@ -111,6 +111,7 @@ struct MatchPlayView: View {
                 }
                 .disabled(viewModel.showingAIResult || viewModel.showingPlayerBoardForAI)
                 .opacity(viewModel.showingAIResult || viewModel.showingPlayerBoardForAI ? 0.5 : 1)
+                .accessibilityValue(effectiveShowingPlayerBoard ? "Showing your fleet" : "Showing enemy waters")
                 .accessibilityHint("Switches between viewing your own fleet and the enemy's waters.")
 
                 // Power-up Bar
@@ -140,6 +141,7 @@ struct MatchPlayView: View {
                             .overlay(RoundedRectangle(cornerRadius: 8).stroke(.cyan.opacity(0.5), lineWidth: 1))
                     )
                     .padding(.horizontal)
+                    .accessibilityElement(children: .combine)
                 }
 
                 Spacer()
@@ -209,6 +211,7 @@ struct StatusHeaderView: View {
                             Capsule().stroke(viewModel.isPlayerTurn ? .green.opacity(0.5) : .orange.opacity(0.5), lineWidth: 1)
                         )
                 )
+                .accessibilityAddTraits(.updatesFrequently)
 
             // Fleet status
             HStack(alignment: .top, spacing: 12) {
@@ -261,6 +264,17 @@ struct FleetStatusView: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(fleetStatusValue)
+    }
+
+    // VoiceOver summary of how many ships in this fleet have been sunk
+    private var fleetStatusValue: String {
+        guard let board = board else { return "" }
+        let statuses = board.shipStatuses
+        let sunkCount = statuses.filter { $0.isSunk }.count
+        return "\(sunkCount) of \(statuses.count) ships sunk"
     }
 }
 
@@ -346,6 +360,7 @@ struct ResultCard: View {
                     .foregroundStyle(.white)
                     .scaleEffect(isAnimating ? 1.1 : 1.0)
             }
+            .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -373,6 +388,7 @@ struct ResultCard: View {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(backgroundColor.opacity(0.2))
                 )
+                .accessibilityHidden(true)
         }
         .padding(12)
         .background(
@@ -384,6 +400,8 @@ struct ResultCard: View {
                 .stroke(backgroundColor.opacity(0.5), lineWidth: 2)
         )
         .padding(.horizontal)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.updatesFrequently)
         .onAppear {
             withAnimation(.easeInOut(duration: 0.3).repeatCount(2, autoreverses: true)) {
                 isAnimating = true
@@ -433,6 +451,7 @@ struct PowerUpBarView: View {
             Text("Power-Ups")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.7))
+                .accessibilityAddTraits(.isHeader)
 
             HStack(spacing: 16) {
                 ForEach(PowerUpType.allCases, id: \.self) { type in
@@ -486,6 +505,7 @@ struct PowerUpBarView: View {
                     .accessibilityHint(type == .sonarPing
                                        ? "Detects ships in a 3 by 3 area."
                                        : "Detects ships in a whole row.")
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
 
                 // Cancel button when power-up selected
@@ -540,9 +560,11 @@ struct PowerUpResultView: View {
             Image(systemName: result.detected ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .font(.system(size: 60))
                 .foregroundStyle(result.detected ? .green : .red)
+                .accessibilityHidden(true)
 
             Text(result.detected ? "Target Detected!" : "No Target Found")
                 .font(.title2.weight(.bold))
+                .accessibilityAddTraits(.isHeader)
 
             Text(descriptionText)
                 .font(.subheadline)
@@ -586,6 +608,7 @@ struct AIThinkingOverlay: View {
                     .font(.system(size: 50))
                     .foregroundStyle(.white)
                     .symbolEffect(.pulse)
+                    .accessibilityHidden(true)
 
                 HStack(spacing: 4) {
                     Text("Enemy is targeting")
@@ -596,6 +619,7 @@ struct AIThinkingOverlay: View {
                         .font(.headline)
                         .foregroundStyle(.white)
                         .frame(width: 24, alignment: .leading)
+                        .accessibilityHidden(true)
                 }
             }
             .padding(32)

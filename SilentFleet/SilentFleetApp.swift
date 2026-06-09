@@ -8,6 +8,9 @@ struct SilentFleetApp: App {
         StoreManager.shared.configure(apiKey: AppConfig.revenueCatAPIKey)
         GameCenterManager.shared.authenticate()
         MetricsManager.shared.start()
+        #if DEBUG
+        AutoplayDriver.runIfRequested()
+        #endif
     }
 
     var body: some Scene {

@@ -234,6 +234,12 @@ struct MainMenuView: View {
             }
             .task {
                 await loadSavedGames()
+
+                // First launch: walk new players through the rules
+                if !SettingsManager.shared.hasSeenWelcome {
+                    SettingsManager.shared.hasSeenWelcome = true
+                    showingHowToPlay = true
+                }
             }
             .onAppear {
                 Task {

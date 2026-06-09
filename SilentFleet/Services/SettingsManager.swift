@@ -33,6 +33,12 @@ final class SettingsManager: ObservableObject {
         didSet { defaults.set(hasCompletedGameplayTooltips, forKey: "hasCompletedGameplayTooltips") }
     }
 
+    // MARK: - First Launch
+
+    @Published var hasSeenWelcome: Bool {
+        didSet { defaults.set(hasSeenWelcome, forKey: "hasSeenWelcome") }
+    }
+
     private init() {
         // Load persisted values with defaults
         self.soundEnabled = defaults.object(forKey: "soundEnabled") as? Bool ?? true
@@ -40,6 +46,7 @@ final class SettingsManager: ObservableObject {
         self.hapticsEnabled = defaults.object(forKey: "hapticsEnabled") as? Bool ?? true
         self.hasCompletedPlacementTooltips = defaults.bool(forKey: "hasCompletedPlacementTooltips")
         self.hasCompletedGameplayTooltips = defaults.bool(forKey: "hasCompletedGameplayTooltips")
+        self.hasSeenWelcome = defaults.bool(forKey: "hasSeenWelcome")
     }
 
     // MARK: - Tutorial Reset

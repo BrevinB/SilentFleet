@@ -68,6 +68,7 @@ struct GameSetupView: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "chevron.left")
+                            .accessibilityHidden(true)
                         Text(currentStep == .mode ? "Menu" : "Back")
                     }
                     .foregroundStyle(.white)
@@ -367,6 +368,7 @@ struct GameSetupView: View {
                 Text("Your Fleet (\(selectedGridSize.shipCount) ships)")
                     .font(.headline)
                     .foregroundStyle(.white)
+                    .accessibilityAddTraits(.isHeader)
 
                 HStack(spacing: 8) {
                     ForEach(Array(selectedGridSize.fleetSizes.enumerated()), id: \.offset) { _, size in
@@ -384,6 +386,7 @@ struct GameSetupView: View {
                         )
                     }
                 }
+                .accessibilityHidden(true)
             }
         }
     }
@@ -407,8 +410,10 @@ struct GameSetupView: View {
 
                     if currentStep == .confirm {
                         Image(systemName: "flag.fill")
+                            .accessibilityHidden(true)
                     } else {
                         Image(systemName: "arrow.right")
+                            .accessibilityHidden(true)
                     }
                 }
                 .foregroundStyle(.white)
@@ -548,6 +553,9 @@ struct SetupProgressView: View {
                     .animation(.spring(response: 0.3), value: currentIndex)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Setup progress")
+        .accessibilityValue("Step \(currentIndex + 1) of \(steps.count)")
         .padding(.horizontal, 24)
     }
 }
@@ -561,6 +569,7 @@ struct StepHeader: View {
             Text(title)
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.white)
+                .accessibilityAddTraits(.isHeader)
 
             Text(subtitle)
                 .font(.subheadline)
@@ -586,6 +595,7 @@ struct ModeCard: View {
                     Image(systemName: icon)
                         .font(.title2)
                         .foregroundStyle(color)
+                        .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
@@ -602,6 +612,7 @@ struct ModeCard: View {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.title2)
                         .foregroundStyle(isSelected ? color : .white.opacity(0.3))
+                        .accessibilityHidden(true)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -610,6 +621,7 @@ struct ModeCard: View {
                             Image(systemName: "checkmark")
                                 .font(.caption2)
                                 .foregroundStyle(color.opacity(0.8))
+                                .accessibilityHidden(true)
 
                             Text(feature)
                                 .font(.caption)
@@ -629,6 +641,8 @@ struct ModeCard: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -655,6 +669,7 @@ struct DifficultyCard: View {
                         .font(.title2)
                         .foregroundStyle(color)
                 }
+                .accessibilityHidden(true)
 
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
@@ -671,6 +686,8 @@ struct DifficultyCard: View {
                                     .foregroundStyle(i < stars ? color : .white.opacity(0.3))
                             }
                         }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("\(stars) out of 3 stars")
                     }
 
                     Text(description)
@@ -684,6 +701,7 @@ struct DifficultyCard: View {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
                     .foregroundStyle(isSelected ? color : .white.opacity(0.3))
+                    .accessibilityHidden(true)
             }
             .padding(16)
             .background(
@@ -696,6 +714,8 @@ struct DifficultyCard: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -723,6 +743,7 @@ struct GridSizeCard: View {
                         .font(.title2)
                         .foregroundStyle(color)
                 }
+                .accessibilityHidden(true)
 
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
@@ -758,6 +779,7 @@ struct GridSizeCard: View {
                             )
                         }
                     }
+                    .accessibilityHidden(true)
                 }
 
                 Spacer()
@@ -765,6 +787,7 @@ struct GridSizeCard: View {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
                     .foregroundStyle(isSelected ? color : .white.opacity(0.3))
+                    .accessibilityHidden(true)
             }
             .padding(16)
             .background(
@@ -777,6 +800,8 @@ struct GridSizeCard: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -793,6 +818,7 @@ struct SplitCard: View {
                 Image(systemName: icon)
                     .font(.system(size: 40))
                     .foregroundStyle(isSelected ? .blue : .white.opacity(0.5))
+                    .accessibilityHidden(true)
 
                 Text(title)
                     .font(.subheadline.weight(.medium))
@@ -810,6 +836,8 @@ struct SplitCard: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -842,6 +870,10 @@ struct BoardSplitPreview: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(.white.opacity(0.3), lineWidth: 1)
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(split == .topBottom
+                            ? "Board preview, split into Top Half and Bottom Half"
+                            : "Board preview, split into Left and Right")
     }
 }
 
@@ -856,6 +888,7 @@ struct SettingSummaryRow: View {
             Image(systemName: icon)
                 .foregroundStyle(color)
                 .frame(width: 24)
+                .accessibilityHidden(true)
 
             Text(label)
                 .foregroundStyle(.white.opacity(0.7))
@@ -866,6 +899,7 @@ struct SettingSummaryRow: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.white)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -888,6 +922,8 @@ struct PowerUpInfo: View {
                 .font(.headline)
                 .foregroundStyle(.white)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name), \(count) available")
     }
 }
 
